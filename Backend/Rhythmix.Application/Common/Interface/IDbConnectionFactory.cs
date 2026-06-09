@@ -1,6 +1,6 @@
 using System.Data;
 
-namespace TuneVault.Application.Common.Interfaces
+namespace Rhythmix.Application.Common.Interfaces
 {
     public interface IDbConnectionFactory
     {
