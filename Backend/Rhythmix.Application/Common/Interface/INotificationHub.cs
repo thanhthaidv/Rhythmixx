@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace TuneVault.Application.Common.Interfaces
+namespace Rhythmix.Application.Common.Interfaces
 {
     public interface INotificationHub
     {
