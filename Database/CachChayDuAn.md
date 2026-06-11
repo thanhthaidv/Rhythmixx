@@ -42,11 +42,11 @@ Sau khi chạy, API sẽ khởi động và hiển thị URL (thường là `htt
 ## 4. Chạy frontend
 1. Vào thư mục frontend:
    ```powershell
-   cd tune-vault-frontend
+   cd Frontend
    ```
 2. Cài đặt dependencies:
    ```powershell
-   npm install
+   npm install (chỉ với lần đầu chạy lần sau chỉ cần npm run dev)
    ```
 3. Chạy frontend dev server:
    ```powershell
