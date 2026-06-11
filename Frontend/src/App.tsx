@@ -8,6 +8,7 @@ import ShareInboxPage from "./pages/ShareInboxPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ProfilePage from "./pages/ProfilePage";
 import PlaylistDetailPage from "./pages/PlaylistDetailPage";
+import LikedSongsPage from "./pages/LikedSongsPage";
 
 // Tạo bộ định tuyến cấu hình đường dẫn URL
 const router = createBrowserRouter([
@@ -22,7 +23,8 @@ const router = createBrowserRouter([
       { path: "/inbox", element: <ShareInboxPage /> },
       { path: "/notifications", element: <NotificationsPage /> },
       { path: "/profile", element: <ProfilePage /> },
-      { path: "/playlist", element: <PlaylistDetailPage /> },
+      { path: "/playlist/:id", element: <PlaylistDetailPage /> },
+      { path: "/liked", element: <LikedSongsPage /> },
     ],
   },
 ]);

@@ -1,8 +1,29 @@
 import { useState, useRef } from "react";
-import { Edit3, X, Save, Camera, Users, UserCheck } from "lucide-react";
+import { Edit3, X, Save, Camera, Users, UserCheck, ListMusic, Music2, Play, Heart, History, Pause } from "lucide-react";
+import { MOCK_PLAYLISTS } from "../data/mockData";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { musicService } from "../services/musicService"; 
+
+const MOCK_SONGS = [
+  { id: 1, title: "Sunset Boulevard", artist: "Neon Coast", album: "City Lights", duration: "0:41", isLiked: true, url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+  { id: 2, title: "Velvet Sky", artist: "Aria Lane", album: "Nightfall", duration: "0:45", isLiked: false, url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
+  { id: 3, title: "Paper Planes", artist: "The Drifters", album: "Horizons", duration: "0:50", isLiked: false, url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" },
+  { id: 4, title: "Blinding Lights", artist: "The Weeknd", album: "After Hours", duration: "3:20", isLiked: false, url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" },
+  { id: 5, title: "Starboy", artist: "The Weeknd", album: "Starboy", duration: "3:50", isLiked: false, url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3" },
+];
+
+// Định nghĩa interface cho Context nhận từ AppLayout (giống bên LikedSongsPage)
+interface OutletContextType {
+  currentSongId: number | null;
+  setCurrentSongId: (id: number | null) => void;
+  isPlaying: boolean;
+  setIsPlaying: (playing: boolean) => void;
+  songs: any[];
+}
 
 const ProfilePage = () => {
-
+  const navigate = useNavigate();
+  const { currentSongId, setCurrentSongId, isPlaying, setIsPlaying } = useOutletContext<OutletContextType>();
   const [userProfile, setUserProfile] = useState({
     fullName: "Hello World",
     bio: "Music lover",
@@ -11,6 +32,43 @@ const ProfilePage = () => {
     followersCount: 234,
     followingCount: 156,
   });
+
+  const publicPlaylists = musicService.getPublicPlaylists();
+  const likedTracks = musicService.getLikedSongs();
+  const recentlyPlayed = musicService.getRecentSongs();
+
+  // 🟢 Hàm tính khoảng thời gian đã trôi qua kể từ lúc nghe nhạc (Ví dụ: "Vừa xong", "2 phút trước")
+  const formatPlayedTime = (date: Date) => {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return "Just now";
+    
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `${diffInMinutes} mins ago`;
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+
+    return date.toLocaleDateString();
+  };
+
+  // 🟢 Hàm click để phát nhạc lên PlayerBar
+  const handlePlayRecentSong = (songId: number) => {
+    if (currentSongId === songId) {
+      setIsPlaying(!isPlaying); // Nếu đang phát đúng bài này thì bấm vào sẽ Pause/Play
+    } else {
+      setCurrentSongId(songId); // Bắn ID lên Layout cha -> PlayerBar bắt được và phát ngay lập tức!
+      setIsPlaying(true);
+    }
+  };
+
+  const [, setTick] = useState(0);
+  const refresh = () => setTick((v) => v + 1);  
+  // const publicPlaylists = MOCK_PLAYLISTS.filter((playlist) => playlist.isPublic === true);
+  // const likedTracks = MOCK_SONGS.filter((song) => song.isLiked);
+  // const recentlyPlayed = MOCK_SONGS.slice(0, 10);
+  const [activeTab, setActiveTab] = useState<"public" | "liked" | "recent">("public");
 
   // State quản lý Modal và form nhập liệu
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -116,6 +174,218 @@ const ProfilePage = () => {
             </button>
           </div>
         </div>
+      </div>
+      {/* Các tab */}
+      <div className="space-y-4 pt-2">
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveTab("public")}
+            className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${
+              activeTab === "public"
+                ? "bg-white text-black"
+                : "border border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800"
+            }`}
+          >
+            Public Playlists
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("liked")}
+            className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${
+              activeTab === "liked"
+                ? "bg-white text-black"
+                : "border border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800"
+            }`}
+          >
+            Liked
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("recent")}
+            className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${
+              activeTab === "recent"
+                ? "bg-white text-black"
+                : "border border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800"
+            }`}
+          >
+            Recently Played
+          </button>
+        </div>
+
+        {activeTab === "public" && (
+          <div className="space-y-4 pt-2">
+            <h3 className="text-xl font-bold text-white">Public Playlists</h3>
+
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {publicPlaylists.map((item) => (
+                <article
+                  key={item.id}
+                  onClick={() => navigate(`/playlist/${item.id}`)}
+                  className="group cursor-pointer rounded-md bg-zinc-900/40 p-4 transition-colors hover:bg-zinc-800"
+                >
+                  <div className="relative mb-3">
+                    <div className="flex aspect-square w-full items-center justify-center rounded-md bg-zinc-800 shadow-lg">
+                      {item.type === "albums" ? (
+                        <Music2 className="size-10 text-zinc-400" />
+                      ) : (
+                        <ListMusic className="size-10 text-zinc-400" />
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                      className="absolute bottom-2 right-2 flex size-12 translate-y-2 items-center justify-center rounded-full bg-green-500 opacity-0 shadow-xl transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100 cursor-pointer active:scale-95"
+                    >
+                      <Play className="size-5 fill-black text-black" />
+                    </button>
+                  </div>
+                  <h4 className="truncate text-sm font-semibold text-white">{item.title}</h4>
+                  <p className="mt-1 line-clamp-2 text-xs text-zinc-400">{item.subtitle}</p>
+                </article>
+              ))}
+            </div>
+
+            {publicPlaylists.length === 0 && (
+              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-zinc-800 py-10 text-center">
+                <p className="text-sm text-zinc-500">No public playlists to show.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "liked" && (
+        <div className="space-y-4 pt-2">
+          <div className="flex items-center gap-2">
+            <Heart className="size-5 text-green-500 fill-green-500" />
+            <h3 className="text-xl font-bold text-white">Liked Songs</h3>
+          </div>
+
+          {/* Hiện duy nhất 1 cái Card Tròn ở tab Liked */}
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <article
+              onClick={() => navigate("/liked")}
+              className="group cursor-pointer rounded-md bg-zinc-900/40 p-4 transition-colors hover:bg-zinc-800 w-full"
+            >
+              <div className="relative mb-3">
+                <div className="flex aspect-square w-full items-center justify-center bg-zinc-800 shadow-lg rounded-full">
+                  <Heart className="size-10 text-green-500 fill-green-500" />
+                </div>
+                <button
+                  type="button"
+                  className="absolute bottom-2 right-2 flex size-12 translate-y-2 items-center justify-center rounded-full bg-green-500 opacity-0 shadow-xl transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100"
+                >
+                  <Play className="size-5 fill-black text-black" />
+                </button>
+              </div>
+              <h4 className="truncate text-sm font-semibold text-white">Liked Songs</h4>
+              <p className="mt-1 line-clamp-2 text-xs text-zinc-400">
+                Playlist • {likedTracks.length} songs
+              </p>
+            </article>
+          </div>
+        </div>
+      )}
+
+        {/* Tab 3: Lịch sử nghe gần đây (Có đầy đủ hiệu ứng Play/Pause/Sóng nhạc) */}
+        {activeTab === "recent" && (
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center gap-2">
+              <History className="size-5 text-green-500" />
+              <h3 className="text-xl font-bold text-white">Recently Played</h3>
+            </div>
+
+            <div className="space-y-2">
+              {recentlyPlayed.map((item, index) => {
+                const isCurrentSong = currentSongId === item.song.id;
+                
+                return (
+                  <div
+                    key={`${item.song.id}-${index}`}
+                    onClick={() => handlePlayRecentSong(item.song.id)}
+                    className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3 hover:bg-zinc-800/40 cursor-pointer transition-colors group select-none"
+                  >
+                    <div className="min-w-0 flex-1 grid grid-cols-12 items-center gap-4">
+                      
+                     {/* CỘT ĐIỀU KHIỂN / SÓNG NHẠC (Chiếm 1 cột) */}
+                    <div className="col-span-1 flex items-center justify-center w-8 h-8 text-xs font-medium text-zinc-400">
+                      
+                      {/* 1. TRẠNG THÁI BÌNH THƯỜNG (KHI KHÔNG HOVER) */}
+                      <div className="group-hover:hidden flex items-center justify-center">
+                        {isCurrentSong ? (
+                          isPlaying ? (
+                            /* Sóng nhạc nhảy nhót sống động khi đang phát */
+                            <div className="flex items-end justify-center gap-[3px] h-3.5 w-5 mx-auto">
+                              <span className="w-[3px] bg-green-500 rounded-full animate-[bounce_0.8s_infinite_100ms] h-2"></span>
+                              <span className="w-[3px] bg-green-500 rounded-full animate-[bounce_0.8s_infinite_300ms] h-3.5"></span>
+                              <span className="w-[3px] bg-green-500 rounded-full animate-[bounce_0.8s_infinite_0s] h-1.5"></span>
+                              <span className="w-[3px] bg-green-500 rounded-full animate-[bounce_0.8s_infinite_200ms] h-2.5"></span>
+                            </div>
+                          ) : (
+                            /* Sóng nhạc đứng yên khi bấm Tạm dừng (Pause) */
+                            <div className="flex items-end justify-center gap-[3px] h-3.5 w-5 mx-auto">
+                              <span className="w-[3px] h-2 bg-green-500 rounded-full"></span>
+                              <span className="w-[3px] h-3.5 bg-green-500 rounded-full"></span>
+                              <span className="w-[3px] h-1.5 bg-green-500 rounded-full"></span>
+                              <span className="w-[3px] h-2.5 bg-green-500 rounded-full"></span>
+                            </div>
+                          )
+                        ) : (
+                          /* Nếu không phải bài đang chọn: Hiện số thứ tự tăng dần chuẩn Spotify */
+                          <span className="text-zinc-500 font-medium">{index + 1}</span>
+                        )}
+                      </div>
+
+                      {/* 2. TRẠNG THÁI KHI DI CHUỘT VÀO HÀNG (HOVER) */}
+                      <div className="hidden group-hover:flex items-center justify-center">
+                        {isCurrentSong && isPlaying ? (
+                          /* Đúng bài đang chạy -> Hiện nút Pause xanh để tạm dừng */
+                          <Pause className="size-4 text-green-500 fill-green-500" />
+                        ) : isCurrentSong && !isPlaying ? (
+                          /* Đúng bài nhưng đang dừng -> Hiện nút Play xanh để tiếp tục phát */
+                          <Play className="size-4 text-green-500 fill-green-500" />
+                        ) : (
+                          /* Bài khác hoàn toàn -> Hiện nút Play trắng để người dùng bấm phát */
+                          <Play className="size-4 text-white fill-white" />
+                        )}
+                      </div>
+
+                    </div>
+
+                      {/* CỘT THÔNG TIN BÀI HÁT (Chiếm 7 cột) */}
+                      <div className="col-span-7 min-w-0">
+                        <div className={`truncate text-sm font-semibold transition-colors ${isCurrentSong ? "text-green-500" : "text-white"}`}>
+                          {item.song.title}
+                        </div>
+                        <div className="truncate text-xs text-zinc-400 mt-0.5">
+                          {item.song.artist} • {item.song.album}
+                        </div>
+                      </div>
+
+                      {/* CỘT THỜI GIAN NGHE (Chiếm 4 cột) */}
+                      <div className="col-span-4 text-xs text-zinc-500 text-right pr-4 tabular-nums">
+                        {formatPlayedTime(item.playedAt)}
+                      </div>
+                    </div>
+
+                    {/* THỜI LƯỢNG GỐC CỦA BÀI HÁT */}
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="text-xs text-zinc-500 tabular-nums">{item.song.duration}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {recentlyPlayed.length === 0 && (
+              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-zinc-800 py-10 text-center">
+                <p className="text-sm text-zinc-500">No recent plays yet.</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {isModalOpen && (

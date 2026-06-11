@@ -33,6 +33,24 @@ const initialSongs = [
     isLiked: false,
     url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
   },
+  {
+    id: 4,
+    title: "Blinding Lights",
+    artist: "The Weeknd",
+    album: "After Hours",
+    duration: "3:20",
+    isLiked: false,
+    url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+  },
+  {
+    id: 5,
+    title: "Starboy",
+    artist: "The Weeknd",
+    album: "Starboy",
+    duration: "3:50",
+    isLiked: false,
+    url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
+  },
 ];
 const AppLayout = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
@@ -44,8 +62,8 @@ const AppLayout = () => {
   // Tự động tìm ra thông tin chi tiết của bài hát dựa trên ID đang chọn
   const currentTrack = songs.find((song) => song.id === currentSongId) || null;
   // Hàm xử lý khi user đăng nhập/đăng ký thành công từ Modal
-  const handleAuthSuccess = (name: string) => {
-    setIsAuthenticated(true); // Đánh dấu đã đăng nhập thành công 
+  const handleAuthSuccess = (_name: string) => {
+    setIsAuthenticated(true); // Đánh dấu đã đăng nhập thành công
   };
   return (
     <div className="flex h-screen flex-col bg-zinc-950 text-white select-none font-sans">
@@ -61,11 +79,20 @@ const AppLayout = () => {
             <SideBar onOpenAuth={() => setIsAuthenticated(false)} />
 
             <main className="m-2 ml-0 flex-1 overflow-y-auto rounded-lg bg-zinc-900 p-6">
-              <Outlet context={{ currentSongId, setCurrentSongId, isPlaying, setIsPlaying, songs, setSongs }} />
+              <Outlet
+                context={{
+                  currentSongId,
+                  setCurrentSongId,
+                  isPlaying,
+                  setIsPlaying,
+                  songs,
+                  setSongs,
+                }}
+              />
             </main>
           </div>
 
-          <PlayerBar 
+          <PlayerBar
             currentTrack={currentTrack}
             isPlaying={isPlaying}
             setIsPlaying={setIsPlaying}
@@ -74,7 +101,7 @@ const AppLayout = () => {
           />
         </>
       )}
-      <VideoPlayerModal 
+      <VideoPlayerModal
         isOpen={isVideoOpen}
         onClose={() => setIsVideoOpen(false)}
         videoUrl="https://media.istockphoto.com/id/1400382484/vi/video/t%C3%A1c-%C4%91%E1%BB%99ng-c%E1%BB%A7a-ti%E1%BB%83u-h%C3%A0nh-tinh-tr%C3%AAn-tr%C3%A1i-%C4%91%E1%BA%A5t-ti%E1%BB%83u-h%C3%A0nh-tinh-sao-ch%E1%BB%95i-thi%C3%AAn-th%E1%BA%A1ch-ph%C3%A1t-s%C3%A1ng-%C4%91i.mp4?p=1&s=mp4-640x640-is&k=20&c=s7GG-mPFa0btByLlpoqGhDLm7FQO2z0cZJuxLBFhRpc="

@@ -1,8 +1,8 @@
 import { Play } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
-  const navigate = useNavigate(); // 🔽 2. KHỞI TẠO HÀM ĐIỀU HƯỚNG
+  // const navigate = useNavigate(); // 🔽 2. KHỞI TẠO HÀM ĐIỀU HƯỚNG
   // Dữ liệu danh sách nhạc giữ nguyên
   const featured = [
     { title: "Daily Mix 1", subtitle: "Made for you" },
@@ -26,7 +26,6 @@ const HomePage = () => {
           <article
             key={item.title}
             className="group flex items-center gap-4 overflow-hidden rounded-md bg-zinc-900 pr-4 transition-colors hover:bg-zinc-800 cursor-pointer relative"
-            onClick={() => navigate("/playlist")}
           >
             <div className="size-20 shrink-0 bg-zinc-800 flex items-center justify-center text-zinc-500 font-bold">
               Mix

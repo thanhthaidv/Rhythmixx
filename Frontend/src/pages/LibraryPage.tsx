@@ -1,44 +1,10 @@
 import { useState } from "react";
-import { Library, Music2, ListMusic, Play, Plus } from "lucide-react"; // Thêm ListMusic và Plus để làm nút Upload/Create
+import { Library, Music2, ListMusic, Play, Plus, Heart } from "lucide-react"; // Thêm ListMusic và Plus để làm nút Upload/Create
 import UploadMediaModal from "../components/UploadMediaModal"
 import { useNavigate } from "react-router-dom";
 import CreatePlaylistModal from "../components/CreatePlaylistModal";
-
-// 1. Dữ liệu giả lập chuẩn hóa theo Database (chia rõ loại playlists và albums)
-const libraryItems = [
-  {
-    title: "Liked Songs",
-    subtitle: "Playlist · 248 songs",
-    type: "playlists" as const,
-  },
-  {
-    title: "Summer 2026",
-    subtitle: "Playlist · 64 songs",
-    type: "playlists" as const,
-  },
-  {
-    title: "Deep Focus",
-    subtitle: "Playlist · 120 songs",
-    type: "playlists" as const,
-  },
-  {
-    title: "Road Trip",
-    subtitle: "Playlist · 88 songs",
-    type: "playlists" as const,
-  },
-
-  // Nhóm Albums (Do chính User/Nghệ sĩ này upload lên hệ thống - bảng Albums)
-  {
-    title: "After Hours",
-    subtitle: "Album · The Weeknd",
-    type: "albums" as const,
-  },
-  {
-    title: "Lost in Saigon",
-    subtitle: "Album · Tự xuất bản",
-    type: "albums" as const,
-  },
-];
+import { MOCK_PLAYLISTS } from "../data/mockData";
+import { musicService } from "../services/musicService";
 
 // 2. Định nghĩa lại các Tab: All, Playlists, Albums
 const libraryTabs = [
@@ -57,8 +23,8 @@ const LibraryPage = () => {
   // Logic lọc dữ liệu dựa trên Tab đang chọn
   const filtered =
     activeTab === "all"
-      ? libraryItems
-      : libraryItems.filter((item) => item.type === activeTab);
+      ? MOCK_PLAYLISTS
+      : MOCK_PLAYLISTS.filter((item) => item.type === activeTab);
 
   return (
     <div className="space-y-6 select-none">
@@ -129,10 +95,37 @@ const LibraryPage = () => {
 
       {/* Lưới hiển thị danh sách các mục trong thư viện */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        {/* 🔥 TỰ HIỂN THỊ CARD TRÒN LIKED SONGS (Chỉ hiện ở tab All hoặc Playlists) */}
+        {(activeTab === "all" || activeTab === "playlists") && (
+          <article
+            onClick={() => navigate("/liked")} // Nhấn vào là qua trang LikedSongsPage liền
+            className="group cursor-pointer rounded-md bg-zinc-900/40 p-4 transition-colors hover:bg-zinc-800"
+          >
+            <div className="relative mb-3">
+              {/* Ép cố định giao diện hình tròn chuẩn Spotify */}
+              <div className="flex aspect-square w-full items-center justify-center bg-zinc-800 shadow-lg rounded-full">
+                <Heart className="size-10 text-green-500 fill-green-500" />
+              </div>
+              <button
+                type="button"
+                className="absolute bottom-2 right-2 flex size-12 translate-y-2 items-center justify-center rounded-full bg-green-500 opacity-0 shadow-xl transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100"
+              >
+                <Play className="size-5 fill-black text-black" />
+              </button>
+            </div>
+            <h3 className="truncate text-sm font-semibold text-white">Liked Songs</h3>
+            <p className="mt-1 line-clamp-2 text-xs text-zinc-400">
+              Playlist · {musicService.getLikedSongs().length} songs {/* Đếm động bài hát thật */}
+            </p>
+          </article>
+        )}
         {filtered.map((item) => (
           <article
-            key={item.title}
-            onClick={() => navigate("/playlist")}
+            key={item.id}
+            onClick={() => item.title === "Liked Songs"
+              ? navigate("/liked")
+              : navigate(`/playlist/${item.id}`)
+            }
             className="group cursor-pointer rounded-md bg-zinc-900/40 p-4 transition-colors hover:bg-zinc-800"
           >
             <div className="relative mb-3">
@@ -142,8 +135,9 @@ const LibraryPage = () => {
                   item.title === "Liked Songs" ? "rounded-full" : "rounded-md"
                 }`}
               >
-                {/* Thay đổi icon hiển thị dựa trên loại dữ liệu */}
-                {item.type === "albums" ? (
+                {item.title === "Liked Songs" ? (
+                  <Heart className="size-10 text-green-500" />
+                ) : item.type === "albums" ? (
                   <Music2 className="size-10 text-zinc-400" />
                 ) : (
                   <ListMusic className="size-10 text-zinc-400" />
