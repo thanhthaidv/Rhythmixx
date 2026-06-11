@@ -1,4 +1,3 @@
-// src/components/AddSongModal.tsx
 import React, { useState } from "react";
 import { PlusCircle, Plus, Check } from "lucide-react"; // Import thêm icon Check
 
@@ -17,13 +16,15 @@ interface AddSongModalProps {
   onClose: () => void;
   allSongs: SongType[];             // Danh sách tất cả bài hát từ DB
   currentPlaylistSongs: SongType[]; // 🌟 Nhận danh sách bài hát ĐANG CÓ SẴN trong playlist để check trùng
+  onAddSongSuccess: (song: SongType) => void; // 🌟 THÊM MỚI: Hàm báo về file cha khi add thành công
 }
 
 const AddSongModal: React.FC<AddSongModalProps> = ({ 
   isOpen, 
   onClose, 
   allSongs, 
-  currentPlaylistSongs 
+  currentPlaylistSongs,
+  onAddSongSuccess, // 🌟 Nhận hàm báo về khi add thành công
 }) => {
   const [songSearchQuery, setSongSearchQuery] = useState("");
 
@@ -108,6 +109,7 @@ const AddSongModal: React.FC<AddSongModalProps> = ({
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
+                        onAddSongSuccess(song);
                         alert(`Đã thêm bài "${song.title}" vào playlist thành công!`);
                         // Mốt kết nối DB: Gọi API add bài hát vào playlist tại đây
                       }}

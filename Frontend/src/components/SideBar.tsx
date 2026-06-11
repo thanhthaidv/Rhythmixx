@@ -35,7 +35,7 @@ const SideBar = ({ onOpenAuth }: { onOpenAuth: () => void }) => {
           <div className="flex size-8 items-center justify-center rounded-full bg-green-500 text-black">
             <Library className="size-4" />
           </div>
-          <span className="text-lg font-bold tracking-tight text-white">Soundwave</span>
+          <span className="text-lg font-bold tracking-tight text-white">TuneVault</span>
         </div>
         
         <nav className="flex flex-col gap-1">
