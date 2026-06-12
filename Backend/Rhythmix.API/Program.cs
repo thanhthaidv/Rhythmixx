@@ -76,8 +76,6 @@ public class Program
             });
         });
 
-        Dapper.SqlMapper.AddTypeHandler(new Rhythmix.Infrastructure.Data.GuidTypeHandler());
-
         var app = builder.Build();
 
         if (app.Environment.IsDevelopment())
