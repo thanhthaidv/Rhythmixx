@@ -45,7 +45,7 @@ Nội dung đề xuất:
 
 ## Chi tiết công việc Backend
 
-### 1. AI Gợi ý bài hát thông minh
+### 1. Minh: AI Gợi ý bài hát thông minh
 
 Phụ trách bởi 2 backend.
 
@@ -67,7 +67,7 @@ Nhiệm vụ:
   - cấu hình API key trong `appsettings.Development.json` hoặc user secrets
 - Không hardcode API key trong source code.
 
-### 2. Tích hợp lên cloud
+### 2. Thái: Tích hợp lên cloud
 
 Phụ trách bởi cùng 2 backend làm AI.
 
@@ -78,7 +78,7 @@ Nhiệm vụ:
 - Chuẩn bị hướng dẫn deploy trong README hoặc báo cáo.
 - Nếu deploy frontend riêng, ghi rõ URL frontend và backend.
 
-### 3. Báo cáo LaTeX
+### 3. Khôi: Báo cáo LaTeX
 
 Phụ trách bởi 1 backend.
 
