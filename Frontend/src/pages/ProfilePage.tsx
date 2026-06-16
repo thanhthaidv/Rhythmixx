@@ -31,6 +31,16 @@ interface OutletContextType {
   songs: any[];
 }
 
+const API_ORIGIN = "http://localhost:5269";
+
+const resolveAssetUrl = (url?: string) => {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("blob:")) {
+    return url;
+  }
+  return `${API_ORIGIN}${url}`;
+};
+
 const ProfilePage = () => {
   const navigate = useNavigate();
   const { userId } = useParams();
@@ -172,19 +182,19 @@ const ProfilePage = () => {
 
       const userId = localStorage.getItem("currentUserId") || "";
 
-      // update profile text fields
+      let avatarUrl = userProfile.avatarUrl;
+      if (selectedFile) {
+        avatarUrl = await userService.uploadAvatar(selectedFile);
+        setPreviewUrl(avatarUrl);
+      }
+
       await userService.updateProfile({
         id: userId,
         userName: editName,
         displayName: editName,
         bio: editBio,
+        avatarUrl,
       });
-
-      // upload avatar if user selected a file
-      if (selectedFile) {
-        const avatarUrl = await userService.uploadAvatar(selectedFile);
-        setPreviewUrl(avatarUrl);
-      }
 
       // refresh profile from server
       const profile = await userService.getCurrentProfileMe();
@@ -195,6 +205,7 @@ const ProfilePage = () => {
       });
       setEditName(profile.userName ?? profile.displayName ?? "");
       setEditBio(profile.bio || "");
+      setSelectedFile(null);
       setIsModalOpen(false);
     } catch (error: any) {
       setProfileError(
@@ -309,7 +320,7 @@ const ProfilePage = () => {
         <div className="relative size-32 shrink-0 overflow-hidden rounded-full border border-zinc-700 bg-zinc-800 shadow-2xl">
           {userProfile.avatarUrl ? (
             <img
-              src={userProfile.avatarUrl}
+              src={resolveAssetUrl(userProfile.avatarUrl)}
               alt="Avatar"
               className="size-full object-cover"
             />
@@ -595,7 +606,7 @@ const ProfilePage = () => {
                 >
                   {previewUrl ? (
                     <img
-                      src={previewUrl}
+                      src={resolveAssetUrl(previewUrl)}
                       alt="Preview"
                       className="size-full object-cover transition-opacity group-hover:opacity-40"
                     />

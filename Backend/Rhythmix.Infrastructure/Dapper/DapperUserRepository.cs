@@ -113,11 +113,20 @@ LEFT JOIN [UserProfiles] up ON u.Id = up.UserId";
         const string updateUser = @"UPDATE [AspNetUsers]
 SET UserName = @UserName
 WHERE Id = @Id";
-        const string updateProfile = @"UPDATE [UserProfiles]
-SET FullName = @DisplayName,
-    Bio = @Bio,
-    AvatarUrl = @AvatarUrl
-WHERE UserId = @Id";
+        const string upsertProfile = @"
+IF EXISTS (SELECT 1 FROM [UserProfiles] WHERE UserId = @Id)
+BEGIN
+    UPDATE [UserProfiles]
+    SET FullName = @DisplayName,
+        Bio = @Bio,
+        AvatarUrl = @AvatarUrl
+    WHERE UserId = @Id
+END
+ELSE
+BEGIN
+    INSERT INTO [UserProfiles] (UserId, FullName, AvatarUrl, Bio, CreatedAt)
+    VALUES (@Id, @DisplayName, @AvatarUrl, @Bio, @CreatedAt)
+END";
 
         await using var connection = new Microsoft.Data.SqlClient.SqlConnection(_connectionString);
         await connection.OpenAsync();
@@ -125,7 +134,7 @@ WHERE UserId = @Id";
         try
         {
             await connection.ExecuteAsync(updateUser, user, localTransaction);
-            await connection.ExecuteAsync(updateProfile, user, localTransaction);
+            await connection.ExecuteAsync(upsertProfile, user, localTransaction);
 
             if (transaction is null)
             {

@@ -70,6 +70,12 @@ public sealed class ProfileController : ControllerBase
     [RequestSizeLimit(5_000_000)]
     public async Task<IActionResult> UploadAvatar([FromForm] UploadAvatarRequestDto request)
     {
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty)
+        {
+            return Unauthorized(new { success = false, message = "Invalid token." });
+        }
+
         var file = request.File;
         if (file is null || file.Length == 0)
         {
@@ -83,6 +89,12 @@ public sealed class ProfileController : ControllerBase
             return BadRequest(new { success = false, message = "Invalid avatar format." });
         }
 
+        var currentProfile = await _mediator.Send(new GetProfileQuery { UserId = userId });
+        if (currentProfile is null)
+        {
+            return NotFound(new { success = false, message = "Profile not found." });
+        }
+
         var avatarsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "images");
         Directory.CreateDirectory(avatarsDir);
 
@@ -92,10 +104,20 @@ public sealed class ProfileController : ControllerBase
         await using var stream = new FileStream(filePath, FileMode.Create);
         await file.CopyToAsync(stream);
 
+        var avatarUrl = $"/uploads/images/{fileName}";
+        var updatedProfile = await _mediator.Send(new UpdateProfileCommand
+        {
+            Id = userId,
+            UserName = currentProfile.UserName,
+            DisplayName = currentProfile.DisplayName,
+            Bio = currentProfile.Bio,
+            AvatarUrl = avatarUrl
+        });
+
         return Ok(new
         {
             success = true,
-            data = new { avatarUrl = $"/uploads/images/{fileName}" }
+            data = new { avatarUrl, profile = updatedProfile }
         });
     }
 
