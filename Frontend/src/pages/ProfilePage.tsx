@@ -296,7 +296,12 @@ const ProfilePage = () => {
   return (
     <div className="space-y-6 select-none">
       <div>
+
         <h1 className="text-4xl font-extrabold tracking-tight text-white">Profile</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight text-white">
+          Profile
+        </h1>
+
         <p className="mt-2 text-sm font-medium text-zinc-400">
           Manage your public profile and social connections.
         </p>
