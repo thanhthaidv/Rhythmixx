@@ -1,10 +1,6 @@
 import { useState } from "react";
 import { Eye, EyeOff, X, Library } from "lucide-react";
-<<<<<<< HEAD
-import { authService } from "../api/authService";
-=======
 import { MOCK_USERS } from "../data/mockData";
->>>>>>> 74fd9038b4822c2d3d861cf9845199c9494fdece
 
 type Mode = "login" | "register";
 
@@ -24,10 +20,6 @@ const AuthModal = ({ open, onClose, onAuthenticated }: AuthModalProps) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-<<<<<<< HEAD
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-=======
->>>>>>> 74fd9038b4822c2d3d861cf9845199c9494fdece
 
   // Nếu state open = false thì không render gì cả
   if (!open) return null;
@@ -46,55 +38,12 @@ const AuthModal = ({ open, onClose, onAuthenticated }: AuthModalProps) => {
     }
     if (mode === "register" && confirmPassword !== password) {
       next.confirmPassword = "Passwords do not match.";
-<<<<<<< HEAD
-      // also add a general auth-level message so it appears in the top alert
       next.auth = "Confirm password does not match password.";
-=======
->>>>>>> 74fd9038b4822c2d3d861cf9845199c9494fdece
     }
     setErrors(next);
     return Object.keys(next).length === 0;
   };
 
-<<<<<<< HEAD
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
-
-    try {
-      if (mode === "login") {
-        const authData = await authService.login({ email, password });
-        if (!authData?.token) {
-          throw new Error("Đăng nhập không thành công. Vui lòng kiểm tra lại thông tin.");
-        }
-
-        onAuthenticated(authData.userName || authData.id);
-        setErrors({});
-        setEmail("");
-        setPassword("");
-        onClose();
-      } else {
-        const authData = await authService.register({ email, password, name });
-        if (!authData?.token) {
-          throw new Error("Đăng ký không thành công. Vui lòng thử lại.");
-        }
-
-        // Don't auto-authenticate after register. Show success and switch to login.
-        setErrors({});
-        setSuccessMessage("Đăng ký thành công. Vui lòng đăng nhập để tiếp tục.");
-        setName("");
-        setEmail("");
-        setPassword("");
-        setConfirmPassword("");
-        setMode("login");
-      }
-    } catch (error) {
-      const apiError = error as any;
-      const message =
-        apiError?.response?.data?.message || apiError?.message || "Có lỗi xảy ra trong quá trình xác thực.";
-      setErrors({ auth: message });
-      setSuccessMessage(null);
-=======
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
@@ -109,7 +58,7 @@ const AuthModal = ({ open, onClose, onAuthenticated }: AuthModalProps) => {
         // Nếu đúng user, lưu thông tin id và tên vào localStorage để hệ thống biết ai đang đăng nhập
         localStorage.setItem("currentUserId", foundUser.id);
         localStorage.setItem("currentUserName", foundUser.name);
-        
+
         onAuthenticated(foundUser.name); // Trả tên ra cho header hiển thị
         setErrors({});
         onClose();
@@ -121,7 +70,6 @@ const AuthModal = ({ open, onClose, onAuthenticated }: AuthModalProps) => {
       // Chế độ đăng ký (để sau này kết nối BE xử lý)
       onAuthenticated(name);
       onClose();
->>>>>>> 74fd9038b4822c2d3d861cf9845199c9494fdece
     }
   };
 
@@ -166,9 +114,7 @@ const AuthModal = ({ open, onClose, onAuthenticated }: AuthModalProps) => {
             {mode === "login" ? "Welcome back" : "Create your account"}
           </h2>
           <p className="mt-1 text-sm text-zinc-400">
-            {mode === "login"
-              ? "Log in to continue to Soundwave."
-              : "Sign up to start listening."}
+            {mode === "login" ? "Log in to continue to Soundwave." : "Sign up to start listening."}
           </p>
         </div>
 
@@ -190,14 +136,7 @@ const AuthModal = ({ open, onClose, onAuthenticated }: AuthModalProps) => {
               {errors.auth}
             </div>
           )}
-<<<<<<< HEAD
-          {successMessage && (
-            <div className="mb-4 rounded-md bg-green-500/10 border border-green-500/20 p-2.5 text-center text-xs font-semibold text-green-300">
-              {successMessage}
-            </div>
-          )}
-=======
->>>>>>> 74fd9038b4822c2d3d861cf9845199c9494fdece
+
           <Field
             id="auth-email"
             label="Email"
@@ -207,6 +146,7 @@ const AuthModal = ({ open, onClose, onAuthenticated }: AuthModalProps) => {
             error={errors.email}
             placeholder="you@example.com"
           />
+
           <PasswordField
             id="auth-password"
             label="Password"
@@ -226,7 +166,7 @@ const AuthModal = ({ open, onClose, onAuthenticated }: AuthModalProps) => {
               onChange={setConfirmPassword}
               error={errors.confirmPassword}
               placeholder="Re-enter your password"
-              visible={showConfirmPassword} 
+              visible={showConfirmPassword}
               onToggleVisibility={() => setShowConfirmPassword(!showConfirmPassword)}
             />
           )}
@@ -242,9 +182,7 @@ const AuthModal = ({ open, onClose, onAuthenticated }: AuthModalProps) => {
 
         {/* Chuyển đổi luân phiên giữa Login và Register */}
         <p className="mt-6 text-center text-sm text-zinc-400">
-          {mode === "login"
-            ? "Don't have an account?"
-            : "Already have an account?"}{" "}
+          {mode === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
           <button
             type="button"
             onClick={() => switchMode(mode === "login" ? "register" : "login")}
@@ -314,6 +252,7 @@ interface PasswordFieldProps {
   visible: boolean;
   onToggleVisibility: () => void;
 }
+
 // Con mắt password
 const PasswordField = ({
   id,
@@ -362,3 +301,4 @@ const PasswordField = ({
 };
 
 export default AuthModal;
+
