@@ -39,13 +39,13 @@ public class Program
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuer           = true,
-                    ValidateAudience         = true,
+                    ValidateIssuer          = true,
+                    ValidateAudience        = true,
                     ValidateIssuerSigningKey  = true,
-                    ValidIssuer              = jwtSettings.GetValue<string>("Issuer"),
-                    ValidAudience            = jwtSettings.GetValue<string>("Audience"),
-                    IssuerSigningKey         = signingKey,
-                    ClockSkew                = TimeSpan.FromMinutes(1)
+                    ValidIssuer             = jwtSettings.GetValue<string>("Issuer"),
+                    ValidAudience           = jwtSettings.GetValue<string>("Audience"),
+                    IssuerSigningKey        = signingKey,
+                    ClockSkew               = TimeSpan.FromMinutes(1)
                 };
 
                 options.Events = new JwtBearerEvents
@@ -83,7 +83,7 @@ public class Program
         {
             app.UseSwagger();
             app.UseSwaggerUI();
-            app.MapOpenApi();                    // endpoint: /openapi/v1.json
+            app.MapOpenApi();                     // endpoint: /openapi/v1.json
             app.MapScalarApiReference(options => // UI tại: /scalar/v1
             {
                 options.Title              = "Rhythmix API";
@@ -92,6 +92,7 @@ public class Program
         }
 
         app.UseHttpsRedirection();
+        app.UseStaticFiles();
         app.UseCors();
         app.UseAuthentication();
         app.UseAuthorization();

@@ -3,13 +3,13 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 export interface Notification {
   id: string;
   receiverId: string;
-  type: 'follow' | 'share_song' | 'share_playlist' | 'share_video';
+  type: "follow" | "share_song" | "share_playlist" | "share_video";
   payload: string;
   time: string;
   isRead: boolean;
 }
 
-// Thêm interface cho tin nhắn
+// Tin nhắn kiểu inbox
 export interface InboxMessageType {
   id: string;
   senderId: string;
@@ -25,9 +25,10 @@ export interface InboxMessageType {
 
 interface NotificationContextType {
   notifications: Notification[];
-  allMessages: InboxMessageType[]; // Quản lý thêm tin nhắn
+  allMessages: InboxMessageType[];
+  unreadCount: number;
   addNotification: (newNoti: Notification) => void;
-  addMessage: (newMsg: InboxMessageType) => void; // Hàm mới để thêm tin nhắn
+  addMessage: (newMsg: InboxMessageType) => void;
   setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
   markAllAsRead: () => void;
 }
@@ -47,13 +48,27 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     return saved ? JSON.parse(saved) : [];
   });
 
+  const [unreadCount, setUnreadCount] = useState<number>(() => {
+    const saved = localStorage.getItem("app_unreadCount");
+    return saved ? parseInt(saved, 10) : 0;
+  });
+
   const addNotification = (newNoti: Notification) => {
     setNotifications((prev) => {
-      const isDuplicate = prev.some(n => n.id === newNoti.id);
+      const isDuplicate = prev.some((n) => n.id === newNoti.id);
       if (isDuplicate) return prev;
-      
+
       const updated = [newNoti, ...prev];
       localStorage.setItem("app_notifications", JSON.stringify(updated));
+
+      if (!newNoti.isRead) {
+        setUnreadCount((countPrev) => {
+          const newCount = countPrev + 1;
+          localStorage.setItem("app_unreadCount", String(newCount));
+          return newCount;
+        });
+      }
+
       return updated;
     });
   };
@@ -67,9 +82,11 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const markAllAsRead = () => {
-    setNotifications(prev => {
-      const updated = prev.map(n => n.receiverId === currentUserId ? { ...n, isRead: true } : n);
+    setNotifications((prev) => {
+      const updated = prev.map((n) => (n.receiverId === currentUserId ? { ...n, isRead: true } : n));
       localStorage.setItem("app_notifications", JSON.stringify(updated));
+      setUnreadCount(0);
+      localStorage.setItem("app_unreadCount", "0");
       return updated;
     });
   };
@@ -85,20 +102,28 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         const saved = localStorage.getItem("app_messages");
         if (saved) setAllMessages(JSON.parse(saved));
       }
+      if (e.key === "app_unreadCount") {
+        const saved = localStorage.getItem("app_unreadCount");
+        if (saved) setUnreadCount(parseInt(saved, 10));
+      }
     };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   return (
-    <NotificationContext.Provider value={{ 
-        notifications, 
-        allMessages, 
-        addNotification, 
+    <NotificationContext.Provider
+      value={{
+        notifications,
+        allMessages,
+        unreadCount,
+        addNotification,
         addMessage,
-        setNotifications, 
-        markAllAsRead 
-    }}>
+        setNotifications,
+        markAllAsRead,
+      }}
+    >
       {children}
     </NotificationContext.Provider>
   );
@@ -109,3 +134,4 @@ export const useNotifications = () => {
   if (!context) throw new Error("useNotifications phải nằm trong NotificationProvider");
   return context;
 };
+

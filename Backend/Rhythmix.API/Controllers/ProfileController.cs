@@ -2,6 +2,7 @@ using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Rhythmix.API.DTOs;
 using Rhythmix.Application.DTOs.Profile;
 using Rhythmix.Application.UseCases.Profile;
 
@@ -63,6 +64,39 @@ public sealed class ProfileController : ControllerBase
         }
 
         return Ok(new { success = true, data = profile });
+    }
+
+    [HttpPost("me/avatar")]
+    [RequestSizeLimit(5_000_000)]
+    public async Task<IActionResult> UploadAvatar([FromForm] UploadAvatarRequestDto request)
+    {
+        var file = request.File;
+        if (file is null || file.Length == 0)
+        {
+            return BadRequest(new { success = false, message = "No file uploaded." });
+        }
+
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
+        if (!allowedExtensions.Contains(extension))
+        {
+            return BadRequest(new { success = false, message = "Invalid avatar format." });
+        }
+
+        var avatarsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "avatars");
+        Directory.CreateDirectory(avatarsDir);
+
+        var fileName = $"{Guid.NewGuid()}{extension}";
+        var filePath = Path.Combine(avatarsDir, fileName);
+
+        await using var stream = new FileStream(filePath, FileMode.Create);
+        await file.CopyToAsync(stream);
+
+        return Ok(new
+        {
+            success = true,
+            data = new { avatarUrl = $"/uploads/avatars/{fileName}" }
+        });
     }
 
     private Guid GetCurrentUserId()

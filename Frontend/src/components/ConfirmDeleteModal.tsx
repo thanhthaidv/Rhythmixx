@@ -6,7 +6,7 @@ interface ConfirmDeleteModalProps {
   onClose: () => void;
   onConfirm: () => void;
   itemTitle: string; 
-  type: "song" | "playlist"; // Thêm prop này để phân biệt
+  type: "song" | "playlist"; // Dùng để phân biệt loại đối tượng
 }
 
 const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ 
@@ -14,7 +14,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  // Cấu hình nội dung dựa trên type
+  // Cấu hình nội dung hiển thị dựa trên loại đối tượng (type)
   const config = {
     song: {
       title: "Xóa bài hát?",
@@ -36,8 +36,10 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[60] animate-[fadeIn_0.15s_ease-out]">
+      {/* Khung Modal */}
       <div className="bg-zinc-950 border border-zinc-800 rounded-xl w-full max-w-sm p-6 shadow-2xl relative select-none">
         
+        {/* Nút đóng góc phải */}
         <button 
           type="button"
           onClick={onClose} 
@@ -46,7 +48,9 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
           <X size={18} />
         </button>
 
+        {/* Nội dung cảnh báo */}
         <div className="flex flex-col items-center text-center mt-2">
+          {/* Icon cảnh báo */}
           <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mb-4">
             <AlertTriangle size={24} />
           </div>
@@ -57,6 +61,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
           </p>
         </div>
 
+        {/* Cụm nút bấm Hủy / Xóa */}
         <div className="flex gap-3 mt-6">
           <button
             type="button"
