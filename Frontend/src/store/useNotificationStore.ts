@@ -7,8 +7,10 @@ interface NotificationState {
   setNotifications: (n: Notification[]) => void;
 }
 
-export const useNotificationStore = create<NotificationState>((set) => ({
+export const useNotificationStore = create<NotificationState>()((set) => ({
   notifications: [],
-  addNotification: (n) => set((state) => ({ notifications: [n, ...state.notifications] })),
+  addNotification: (n) => set((state) => ({ 
+    notifications: [n, ...state.notifications] 
+  })),
   setNotifications: (n) => set({ notifications: n }),
 }));
