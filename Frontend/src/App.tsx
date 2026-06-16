@@ -10,6 +10,8 @@ import ProfilePage from "./pages/ProfilePage";
 import PlaylistDetailPage from "./pages/PlaylistDetailPage";
 import LikedSongsPage from "./pages/LikedSongsPage";
 import { NotificationProvider } from "./context/NotificationContext";
+import { ThemeProvider } from "./context/ThemeContext";
+import { LoadingProvider } from "./context/LoadingContext";
 
 // Tạo bộ định tuyến cấu hình đường dẫn URL
 const router = createBrowserRouter([
@@ -17,7 +19,7 @@ const router = createBrowserRouter([
     // Dùng AppLayout làm khung bao bọc tất cả các trang
     element: <AppLayout />,
     children: [
-      { path: "/", element: <Navigate to="/home" replace /> }, 
+      { path: "/", element: <Navigate to="/home" replace /> },
       { path: "/home", element: <HomePage /> },
       { path: "/search", element: <SearchPage /> },
       { path: "/library", element: <LibraryPage /> },
@@ -33,10 +35,15 @@ const router = createBrowserRouter([
 
 const App = () => {
   return (
-    <NotificationProvider>
-      <RouterProvider router={router} />
-    </NotificationProvider>
+    <ThemeProvider>
+      <LoadingProvider>
+        <NotificationProvider>
+          <RouterProvider router={router} />
+        </NotificationProvider>
+      </LoadingProvider>
+    </ThemeProvider>
   );
 };
 
 export default App;
+
