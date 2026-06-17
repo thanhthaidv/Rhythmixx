@@ -32,6 +32,10 @@ public static class DependencyInjection
         // Đăng ký NotificationService để inject INotificationHub qua SignalR
         services.AddScoped<INotificationHub, NotificationService>();
 
+        // Đăng ký Anthropic AI service
+        services.Configure<AnthropicOptions>(configuration.GetSection("Anthropic"));
+        services.AddScoped<IAnthropicService, AnthropicService>();
+
         return services;
     }
 }
