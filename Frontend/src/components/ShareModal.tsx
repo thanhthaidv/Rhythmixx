@@ -18,7 +18,7 @@ interface ShareModalProps {
 
 const isGuid = (value: string | number) =>
   typeof value === "string" &&
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 
 const ShareModal = ({ isOpen, onClose, itemToShare, onShareSuccess }: ShareModalProps) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -50,7 +50,7 @@ const ShareModal = ({ isOpen, onClose, itemToShare, onShareSuccess }: ShareModal
       setShareError("");
 
       if (!isGuid(receiverId) || !isGuid(itemToShare.id)) {
-        setShareError("Chi co the chia se du lieu da luu trong database.");
+        setShareError("Khong the chia se vi ID khong phai uniqueidentifier hop le.");
         return;
       }
 

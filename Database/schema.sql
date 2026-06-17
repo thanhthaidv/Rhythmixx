@@ -119,7 +119,7 @@ CREATE TABLE MediaShares
 
     Message NVARCHAR(500),
 
-    SharedAt DATETIME2 DEFAULT GETDATE(),
+    SharedAt DATETIME2 DEFAULT SYSUTCDATETIME(),
 
     FOREIGN KEY(SenderId)
         REFERENCES AspNetUsers(Id),
