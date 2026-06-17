@@ -60,6 +60,29 @@ export interface UploadMediaDto {
   genreId?: string;
 }
 
+// ============ Album DTOs ============
+export interface AlbumDto {
+  albumId: string;
+  title: string;
+  description?: string;
+  coverImageUrl?: string;
+  releaseDate?: string;
+  createdAt: string;
+  ownerId: string;
+  trackCount: number;
+}
+
+export interface AlbumDetailDto extends AlbumDto {
+  tracks: MediaItemDto[];
+}
+
+export interface CreateAlbumDto {
+  title: string;
+  description?: string;
+  coverImageUrl?: string;
+  releaseDate?: string;
+}
+
 // ============ Playlist DTOs ============
 export interface PlaylistDto {
   playlistId: string;

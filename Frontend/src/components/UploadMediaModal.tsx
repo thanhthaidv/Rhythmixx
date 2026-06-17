@@ -1,6 +1,8 @@
 import { X, ChevronDown, ChevronUp } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { albumService } from "../api/albumService"
 import { mediaService } from "../api/mediaService"
+import type { AlbumDto } from "../types/api"
 interface UploadMediaModalProps {
   isOpen: boolean
   onClose: () => void
@@ -12,6 +14,7 @@ interface FormErrors {
   selectedFile?: string
   newAlbumTitle?: string
   selectedGenres?: string
+  submit?: string
 }
 
 const UploadMediaModal = ({ isOpen, onClose, onUploaded }: UploadMediaModalProps) => {
@@ -25,11 +28,11 @@ const UploadMediaModal = ({ isOpen, onClose, onUploaded }: UploadMediaModalProps
     const [selectedVideoFile, setSelectedVideoFile] = useState<File | null>(null)
   
     // 2. Giả lập danh sách Albums hiện có
-    const [myAlbums, setMyAlbums] = useState([
-      { id: "album-1", title: "After Hours" },
-      { id: "album-2", title: "Lost in Saigon" },
-    ])
+    const [myAlbums, setMyAlbums] = useState<AlbumDto[]>([])
     const [myGenres] = useState<{ id: string; title: string }[]>([])
+    const [isLoadingAlbums, setIsLoadingAlbums] = useState(false)
+    const [isSavingAlbum, setIsSavingAlbum] = useState(false)
+    const [isUploading, setIsUploading] = useState(false)
   
     // 3. State quản lý Form tạo nhanh Album mới
     const [isCreatingAlbum, setIsCreatingAlbum] = useState(false)
@@ -45,9 +48,33 @@ const UploadMediaModal = ({ isOpen, onClose, onUploaded }: UploadMediaModalProps
         setErrors((prev) => ({ ...prev, [field]: undefined }))
       }
     }
+
+    useEffect(() => {
+      if (!isOpen) return
+
+      let cancelled = false
+      const loadAlbums = async () => {
+        setIsLoadingAlbums(true)
+        try {
+          const albums = await albumService.getMyAlbums()
+          if (!cancelled) setMyAlbums(albums)
+        } catch {
+          if (!cancelled) {
+            setErrors((prev) => ({ ...prev, submit: "Không tải được danh sách album." }))
+          }
+        } finally {
+          if (!cancelled) setIsLoadingAlbums(false)
+        }
+      }
+
+      void loadAlbums()
+      return () => {
+        cancelled = true
+      }
+    }, [isOpen])
   
     // 5. Hàm xử lý tạo nhanh Album (Sau này kết nối POST /api/albums ở đây)
-    const handleSaveNewAlbum = () => {
+    const handleSaveNewAlbum = async () => {
       setErrors((prev) => ({ ...prev, newAlbumTitle: undefined }))
   
       if (!newAlbumTitle.trim()) {
@@ -55,15 +82,22 @@ const UploadMediaModal = ({ isOpen, onClose, onUploaded }: UploadMediaModalProps
         return
       }
 
-      const newAlbum = {
-        id: `album-${Date.now()}`,
-        title: newAlbumTitle.trim(),
+      setIsSavingAlbum(true)
+      try {
+        const newAlbum = await albumService.create({
+          title: newAlbumTitle.trim(),
+          description: newAlbumDesc.trim() || undefined,
+        })
+        setMyAlbums((current) => [newAlbum, ...current])
+        setSelectedAlbumId(newAlbum.albumId)
+        setNewAlbumTitle("")
+        setNewAlbumDesc("")
+        setIsCreatingAlbum(false)
+      } catch {
+        setErrors((prev) => ({ ...prev, newAlbumTitle: "Không tạo được album. Vui lòng thử lại." }))
+      } finally {
+        setIsSavingAlbum(false)
       }
-      setMyAlbums((current) => [...current, newAlbum])
-      setSelectedAlbumId(newAlbum.id)
-      setNewAlbumTitle("")
-      setNewAlbumDesc("")
-      setIsCreatingAlbum(false)
     }
   
     // 6. Hàm xử lý gửi Form chính (Sau này kết nối POST /api/tracks ở đây)
@@ -82,22 +116,30 @@ const UploadMediaModal = ({ isOpen, onClose, onUploaded }: UploadMediaModalProps
   
       setErrors({})
   
-      await mediaService.uploadMedia({
-        file: selectedFile || selectedVideoFile!,
-        title: title.trim(),
-        description: description.trim() || undefined,
-        isPublic: true,
-      })
+      setIsUploading(true)
+      try {
+        await mediaService.uploadMedia({
+          file: selectedFile || selectedVideoFile!,
+          title: title.trim(),
+          description: description.trim() || undefined,
+          isPublic: true,
+          albumId: selectedAlbumId || undefined,
+        })
 
-      await onUploaded?.()
-      setTitle("")
-      setArtist("")
-      setDescription("")
-      setSelectedAlbumId("")
-      setSelectedGenres([])
-      setSelectedFile(null)
-      setSelectedVideoFile(null)
-      onClose()
+        await onUploaded?.()
+        setTitle("")
+        setArtist("")
+        setDescription("")
+        setSelectedAlbumId("")
+        setSelectedGenres([])
+        setSelectedFile(null)
+        setSelectedVideoFile(null)
+        onClose()
+      } catch {
+        setErrors((prev) => ({ ...prev, submit: "Upload thất bại. Vui lòng kiểm tra lại API hoặc file media." }))
+      } finally {
+        setIsUploading(false)
+      }
     }
 
   if (!isOpen) return null
@@ -331,7 +373,8 @@ const UploadMediaModal = ({ isOpen, onClose, onUploaded }: UploadMediaModalProps
                   <button 
                     type="button" 
                     onClick={handleSaveNewAlbum} 
-                    className="w-full rounded-lg bg-zinc-200 py-2.5 text-sm font-bold text-black hover:bg-white cursor-pointer active:scale-95 transition-all"
+                    disabled={isSavingAlbum}
+                    className="w-full rounded-lg bg-zinc-200 py-2.5 text-sm font-bold text-black hover:bg-white cursor-pointer active:scale-95 transition-all disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     Tạo Album
                   </button>
@@ -344,9 +387,9 @@ const UploadMediaModal = ({ isOpen, onClose, onUploaded }: UploadMediaModalProps
                     onChange={(e) => setSelectedAlbumId(e.target.value)} 
                     className="w-full rounded-lg bg-zinc-900 px-4 py-3 text-base text-white outline-none border border-zinc-800 focus:border-zinc-700 cursor-pointer"
                   >
-                    <option value="">-- Single --</option>
+                    <option value="">{isLoadingAlbums ? "Đang tải album..." : "-- Single --"}</option>
                     {myAlbums.map((album) => (
-                      <option key={album.id} value={album.id}>{album.title}</option>
+                      <option key={album.albumId} value={album.albumId}>{album.title}</option>
                     ))}
                   </select>
                 </div>
@@ -357,10 +400,12 @@ const UploadMediaModal = ({ isOpen, onClose, onUploaded }: UploadMediaModalProps
             <div className="pt-8">
               <button 
                 type="submit" 
-                className="w-full rounded-full bg-green-500 py-3.5 text-lg font-bold text-black transition-all hover:scale-[1.01] active:scale-95 cursor-pointer shadow-lg shadow-green-500/20"
+                disabled={isUploading}
+                className="w-full rounded-full bg-green-500 py-3.5 text-lg font-bold text-black transition-all hover:scale-[1.01] active:scale-95 cursor-pointer shadow-lg shadow-green-500/20 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Publish Track
               </button>
+              {errors.submit && <p className="mt-3 text-center text-xs font-medium text-red-500">{errors.submit}</p>}
             </div>
           </div>
 
