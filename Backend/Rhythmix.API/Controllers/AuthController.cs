@@ -24,7 +24,21 @@ public sealed class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
+        // Trả về rõ ràng thông tin validation cho client
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = "Validation failed.",
+                errors = ModelState.ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>())
+            });
+        }
+
         var command = new RegisterCommand
+
         {
             Email = request.Email,
             UserName = request.UserName,
