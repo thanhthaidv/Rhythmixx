@@ -76,7 +76,10 @@ export interface ArtistDto {
   name: string;
   description?: string;
   avatarUrl?: string;
+  coverImageUrl?: string;
   createdAt?: string;
+  trackCount?: number;
+  followerCount?: number;
 }
 
 // ============ Album DTOs ============

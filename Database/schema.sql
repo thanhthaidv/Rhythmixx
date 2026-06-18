@@ -25,6 +25,7 @@ CREATE TABLE Artists
     Name NVARCHAR(200) NOT NULL,
     Description NVARCHAR(MAX),
     AvatarUrl NVARCHAR(500),
+    CoverImageUrl NVARCHAR(500),
     CreatedAt DATETIME2 DEFAULT GETDATE()
 );
 

@@ -66,7 +66,7 @@ namespace Rhythmix.API.Controllers
                 WHERE f.FollowingId = @UserId
                 ORDER BY f.FollowedAt DESC";
 
-            var users = await connection.QueryAsync(sql, new { UserId = userId });
+            var users = await connection.QueryAsync<FollowUserItem>(sql, new { UserId = userId });
             return Ok(ApiResponse<object>.ToSuccess(users));
         }
 
@@ -82,7 +82,7 @@ namespace Rhythmix.API.Controllers
                 WHERE f.FollowerId = @UserId
                 ORDER BY f.FollowedAt DESC";
 
-            var users = await connection.QueryAsync(sql, new { UserId = userId });
+            var users = await connection.QueryAsync<FollowUserItem>(sql, new { UserId = userId });
             return Ok(ApiResponse<object>.ToSuccess(users));
         }
 
@@ -95,7 +95,7 @@ namespace Rhythmix.API.Controllers
                     (SELECT COUNT(1) FROM Follows WHERE FollowingId = @UserId) AS FollowersCount,
                     (SELECT COUNT(1) FROM Follows WHERE FollowerId = @UserId) AS FollowingCount";
 
-            var counts = await connection.QuerySingleAsync(sql, new { UserId = userId });
+            var counts = await connection.QuerySingleAsync<FollowCounts>(sql, new { UserId = userId });
             return Ok(ApiResponse<object>.ToSuccess(counts));
         }
 
@@ -175,14 +175,41 @@ namespace Rhythmix.API.Controllers
 
             using var connection = _connectionFactory.CreateConnection();
             const string sql = @"
-                SELECT a.ArtistId, a.Name, a.Description, a.AvatarUrl, a.CreatedAt
+                SELECT a.ArtistId, a.Name, a.Description, a.AvatarUrl, a.CoverImageUrl, a.CreatedAt
                 FROM ArtistFollows af
                 INNER JOIN Artists a ON a.ArtistId = af.ArtistId
                 WHERE af.UserId = @UserId
                 ORDER BY af.FollowedAt DESC";
 
-            var artists = await connection.QueryAsync(sql, new { UserId = userId });
+            var artists = await connection.QueryAsync<FollowArtistItem>(sql, new { UserId = userId });
             return Ok(ApiResponse<object>.ToSuccess(artists));
+        }
+
+        private sealed class FollowUserItem
+        {
+            public Guid Id { get; set; }
+            public string UserName { get; set; } = string.Empty;
+            public string Email { get; set; } = string.Empty;
+            public string? DisplayName { get; set; }
+            public string? Bio { get; set; }
+            public string? AvatarUrl { get; set; }
+            public DateTime CreatedAt { get; set; }
+        }
+
+        private sealed class FollowCounts
+        {
+            public int FollowersCount { get; set; }
+            public int FollowingCount { get; set; }
+        }
+
+        private sealed class FollowArtistItem
+        {
+            public Guid ArtistId { get; set; }
+            public string Name { get; set; } = string.Empty;
+            public string? Description { get; set; }
+            public string? AvatarUrl { get; set; }
+            public string? CoverImageUrl { get; set; }
+            public DateTime CreatedAt { get; set; }
         }
     }
 }

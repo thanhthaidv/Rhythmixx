@@ -18,7 +18,7 @@ public sealed class DapperArtistRepository : IArtistRepository
     public async Task<Artist?> GetByNameAsync(string name, IDbTransaction? transaction = null)
     {
         const string sql = @"
-            SELECT ArtistId, Name, Description, AvatarUrl, CreatedAt
+            SELECT ArtistId, Name, Description, AvatarUrl, CoverImageUrl, CreatedAt
             FROM [Artists]
             WHERE LOWER(Name) = LOWER(@Name)";
 
@@ -30,8 +30,8 @@ public sealed class DapperArtistRepository : IArtistRepository
     public async Task<Guid> AddAsync(Artist artist, IDbTransaction? transaction = null)
     {
         const string sql = @"
-            INSERT INTO [Artists] (ArtistId, Name, Description, AvatarUrl, CreatedAt)
-            VALUES (@ArtistId, @Name, @Description, @AvatarUrl, @CreatedAt)";
+            INSERT INTO [Artists] (ArtistId, Name, Description, AvatarUrl, CoverImageUrl, CreatedAt)
+            VALUES (@ArtistId, @Name, @Description, @AvatarUrl, @CoverImageUrl, @CreatedAt)";
 
         await using var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync();
