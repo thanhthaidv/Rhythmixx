@@ -134,16 +134,13 @@ const ProfilePage = () => {
   const recentlyPlayed: { song: SongType; playedAt: Date }[] = [];
 
   useEffect(() => {
-    if (!isMyProfile) {
-      setPublicPlaylists([]);
-      return;
-    }
-
     playlistService
-      .getAll()
-      .then((items) => setPublicPlaylists(items.filter((item) => item.isPublic)))
+      .getPublic()
+      .then((items) =>
+        setPublicPlaylists(targetId ? items.filter((item) => item.ownerId === targetId) : items)
+      )
       .catch(() => setPublicPlaylists([]));
-  }, [isMyProfile]);
+  }, [targetId]);
 
   const formatPlayedTime = (date: Date) => {
     const now = new Date();

@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Rhythmix.Application;
 using Rhythmix.Infrastructure;
@@ -15,6 +16,28 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddControllers();
+        builder.Services.Configure<ApiBehaviorOptions>(options =>
+        {
+            options.InvalidModelStateResponseFactory = context =>
+            {
+                var errors = context.ModelState
+                    .Where(entry => entry.Value?.Errors.Count > 0)
+                    .ToDictionary(
+                        entry => entry.Key,
+                        entry => entry.Value?.Errors
+                            .Select(error => string.IsNullOrWhiteSpace(error.ErrorMessage)
+                                ? "Invalid value."
+                                : error.ErrorMessage)
+                            .ToArray() ?? Array.Empty<string>());
+
+                return new BadRequestObjectResult(new
+                {
+                    success = false,
+                    message = "Please check the highlighted fields.",
+                    errors
+                });
+            };
+        });
         builder.Services.AddApplication();
         builder.Services.AddInfrastructure(builder.Configuration);
         builder.Services.AddSignalR();

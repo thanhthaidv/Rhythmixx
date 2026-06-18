@@ -182,9 +182,17 @@ const LibraryPage = () => {
             className="group cursor-pointer rounded-md bg-zinc-900/40 p-4 transition-colors hover:bg-zinc-800"
           >
             <div className="relative mb-3">
-              <div className="flex aspect-square w-full items-center justify-center rounded-md bg-zinc-800 shadow-lg">
-                <ListMusic className="size-10 text-zinc-400" />
-              </div>
+              {playlist.thumbnailUrl ? (
+                <img
+                  src={playlist.thumbnailUrl.startsWith("http") ? playlist.thumbnailUrl : `http://localhost:5269${playlist.thumbnailUrl}`}
+                  alt={playlist.name}
+                  className="aspect-square w-full rounded-md object-cover shadow-lg"
+                />
+              ) : (
+                <div className="flex aspect-square w-full items-center justify-center rounded-md bg-zinc-800 shadow-lg">
+                  <ListMusic className="size-10 text-zinc-400" />
+                </div>
+              )}
               <button
                 type="button"
                 className="absolute bottom-2 right-2 flex size-12 translate-y-2 items-center justify-center rounded-full bg-green-500 opacity-0 shadow-xl transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100"
@@ -196,7 +204,7 @@ const LibraryPage = () => {
               {playlist.name}
             </h3>
             <p className="mt-1 line-clamp-2 text-xs text-zinc-400">
-              Playlist · {playlist.isPublic ? "Public" : "Private"}
+              Playlist · {playlist.trackCount ?? 0} songs · {playlist.isPublic ? "Public" : "Private"}
             </p>
           </article>
         ))}

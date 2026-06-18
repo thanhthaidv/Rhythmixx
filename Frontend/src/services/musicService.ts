@@ -25,8 +25,7 @@ export const musicService = {
   },
 
   async getPublicPlaylists() {
-    const playlists = await playlistService.getAll();
-    return playlists.filter((playlist) => playlist.isPublic);
+    return playlistService.getPublic();
   },
 
   getLikedSongs(songs: SongType[] = []) {

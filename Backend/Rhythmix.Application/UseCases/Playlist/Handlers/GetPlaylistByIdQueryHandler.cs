@@ -53,6 +53,7 @@ public sealed class GetPlaylistByIdQueryHandler : IRequestHandler<GetPlaylistByI
             PlaylistId = playlist.Id,
             Name = playlist.Name,
             Description = playlist.Description,
+            CoverImageUrl = playlist.CoverImageUrl,
             IsPublic = playlist.IsPublic,
             OwnerId = playlist.OwnerId,
             CreatedAt = playlist.CreatedAt,

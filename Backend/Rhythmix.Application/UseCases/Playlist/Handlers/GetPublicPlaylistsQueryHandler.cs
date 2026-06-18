@@ -4,13 +4,13 @@ using Rhythmix.Domain.Interfaces;
 
 namespace Rhythmix.Application.UseCases.Playlist.Handlers;
 
-public sealed class GetUserPlaylistsQueryHandler : IRequestHandler<GetUserPlaylistsQuery, IEnumerable<PlaylistSummaryDto>>
+public sealed class GetPublicPlaylistsQueryHandler : IRequestHandler<GetPublicPlaylistsQuery, IEnumerable<PlaylistSummaryDto>>
 {
     private readonly IPlaylistRepository _playlistRepository;
     private readonly IPlaylistTrackRepository _playlistTrackRepository;
     private readonly IMediaRepository _mediaRepository;
 
-    public GetUserPlaylistsQueryHandler(
+    public GetPublicPlaylistsQueryHandler(
         IPlaylistRepository playlistRepository,
         IPlaylistTrackRepository playlistTrackRepository,
         IMediaRepository mediaRepository)
@@ -20,11 +20,9 @@ public sealed class GetUserPlaylistsQueryHandler : IRequestHandler<GetUserPlayli
         _mediaRepository = mediaRepository;
     }
 
-    public async Task<IEnumerable<PlaylistSummaryDto>> Handle(
-        GetUserPlaylistsQuery request,
-        CancellationToken cancellationToken)
+    public async Task<IEnumerable<PlaylistSummaryDto>> Handle(GetPublicPlaylistsQuery request, CancellationToken cancellationToken)
     {
-        var playlists = await _playlistRepository.GetByOwnerIdAsync(request.UserId);
+        var playlists = await _playlistRepository.GetPublicAsync();
         var result = new List<PlaylistSummaryDto>();
 
         foreach (var playlist in playlists)
@@ -43,8 +41,7 @@ public sealed class GetUserPlaylistsQueryHandler : IRequestHandler<GetUserPlayli
                 OwnerId = playlist.OwnerId,
                 TrackCount = tracks.Count,
                 ThumbnailUrl = playlist.CoverImageUrl ?? firstMedia?.ThumbnailUrl,
-                CreatedAt = playlist.CreatedAt,
-                UpdatedAt = null
+                CreatedAt = playlist.CreatedAt
             });
         }
 

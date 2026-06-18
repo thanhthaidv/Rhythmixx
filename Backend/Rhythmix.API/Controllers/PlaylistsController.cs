@@ -2,8 +2,10 @@ using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Rhythmix.API.DTOs;
 using Rhythmix.Application.DTOs.Playlist;
 using Rhythmix.Application.UseCases.Playlist;
+using Rhythmix.Domain.Interfaces;
 
 
 namespace Rhythmix.API.Controllers;
@@ -14,17 +16,19 @@ namespace Rhythmix.API.Controllers;
 public sealed class PlaylistsController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IFileStorageService _fileStorageService;
 
-    public PlaylistsController(IMediator mediator)
+    public PlaylistsController(IMediator mediator, IFileStorageService fileStorageService)
     {
         _mediator = mediator;
+        _fileStorageService = fileStorageService;
     }
 
     /// <summary>
     /// Tạo mới một playlist
     /// </summary>
     [HttpPost]
-    public async Task<IActionResult> CreatePlaylistAsync([FromBody] CreatePlaylistRequest request)
+    public async Task<IActionResult> CreatePlaylistAsync([FromForm] CreatePlaylistFormRequest request)
     {
         var userId = GetCurrentUserId();
         if (userId == Guid.Empty)
@@ -32,16 +36,18 @@ public sealed class PlaylistsController : ControllerBase
             return Unauthorized(new { success = false, message = "Invalid token." });
         }
 
-        var command = new CreatePlaylistCommand
-        {
-            OwnerId = userId,
-            Name = request.Name,
-            Description = request.Description,
-            IsPublic = request.IsPublic
-        };
-
         try
         {
+            var coverImageUrl = await SaveCoverImageAsync(request.CoverImage);
+            var command = new CreatePlaylistCommand
+            {
+                OwnerId = userId,
+                Name = request.Name,
+                Description = request.Description,
+                CoverImageUrl = coverImageUrl,
+                IsPublic = request.IsPublic
+            };
+
             var result = await _mediator.Send(command);
             return Ok(new { success = true, data = result });
         }
@@ -54,7 +60,7 @@ public sealed class PlaylistsController : ControllerBase
     /// <summary>
     /// Lấy thông tin chi tiết của một playlist, bao gồm danh sách bài hát
     /// </summary>
-    [HttpGet("{playlistId}")]
+    [HttpGet("{playlistId:guid}")]
     public async Task<IActionResult> GetPlaylistAsync(Guid playlistId)
     {
         var query = new GetPlaylistByIdQuery { PlaylistId = playlistId };
@@ -86,6 +92,16 @@ public sealed class PlaylistsController : ControllerBase
         return Ok(new { success = true, data = result });
     }
 
+    [HttpGet("public")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetPublicPlaylistsAsync()
+    {
+        var query = new GetPublicPlaylistsQuery();
+        var result = await _mediator.Send(query);
+
+        return Ok(new { success = true, data = result });
+    }
+
     /// <summary>
     /// Lấy danh sách playlist của một user cụ thể (công khai)
     /// </summary>
@@ -102,7 +118,7 @@ public sealed class PlaylistsController : ControllerBase
     /// <summary>
     /// Thêm một track vào playlist
     /// </summary>
-    [HttpPost("{playlistId}/tracks")]
+    [HttpPost("{playlistId:guid}/tracks")]
     public async Task<IActionResult> AddTrackAsync(Guid playlistId, [FromBody] AddTrackRequest request)
     {
         var userId = GetCurrentUserId();
@@ -145,7 +161,7 @@ public sealed class PlaylistsController : ControllerBase
     /// <summary>
     /// Xóa một track khỏi playlist
     /// </summary>
-    [HttpDelete("{playlistId}/tracks/{mediaId}")]
+    [HttpDelete("{playlistId:guid}/tracks/{mediaId:guid}")]
     public async Task<IActionResult> RemoveTrackAsync(Guid playlistId, Guid mediaId)
     {
         var userId = GetCurrentUserId();
@@ -183,7 +199,7 @@ public sealed class PlaylistsController : ControllerBase
     /// <summary>
     /// Cập nhật trạng thái công khai của playlist
     /// </summary>
-    [HttpPut("{playlistId}/visibility")]
+    [HttpPut("{playlistId:guid}/visibility")]
     public async Task<IActionResult> UpdateVisibilityAsync(Guid playlistId, [FromBody] UpdateVisibilityRequest request)
     {
         var userId = GetCurrentUserId();
@@ -221,7 +237,7 @@ public sealed class PlaylistsController : ControllerBase
     /// <summary>
     /// Cập nhật thông tin playlist (tên, mô tả)
     /// </summary>
-    [HttpPut("{playlistId}")]
+    [HttpPut("{playlistId:guid}")]
     public async Task<IActionResult> UpdatePlaylistInfoAsync(Guid playlistId, [FromBody] UpdatePlaylistInfoRequest request)
     {
         var userId = GetCurrentUserId();
@@ -269,7 +285,7 @@ public sealed class PlaylistsController : ControllerBase
     /// <summary>
     /// Xóa một playlist
     /// </summary>
-    [HttpDelete("{playlistId}")]
+    [HttpDelete("{playlistId:guid}")]
     public async Task<IActionResult> DeletePlaylistAsync(Guid playlistId)
     {
         var userId = GetCurrentUserId();
@@ -311,7 +327,7 @@ public sealed class PlaylistsController : ControllerBase
     /// <summary>
     /// Cập nhật thứ tự sắp xếp của một track trong playlist
     /// </summary>
-    [HttpPut("{playlistId}/tracks/{mediaId}/sort-order")]
+    [HttpPut("{playlistId:guid}/tracks/{mediaId:guid}/sort-order")]
     public async Task<IActionResult> UpdateTrackSortOrderAsync(
         Guid playlistId,
         Guid mediaId,
@@ -359,5 +375,23 @@ public sealed class PlaylistsController : ControllerBase
     {
         var claim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
         return Guid.TryParse(claim, out var userId) ? userId : Guid.Empty;
+    }
+
+    private async Task<string?> SaveCoverImageAsync(IFormFile? coverImage)
+    {
+        if (coverImage is not { Length: > 0 })
+        {
+            return null;
+        }
+
+        var extension = Path.GetExtension(coverImage.FileName).ToLowerInvariant();
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        if (!allowedExtensions.Contains(extension))
+        {
+            throw new InvalidOperationException("Invalid cover image format. Only jpg, png and webp files are allowed.");
+        }
+
+        using var stream = coverImage.OpenReadStream();
+        return await _fileStorageService.SaveFileAsync(stream, coverImage.FileName, "images");
     }
 }

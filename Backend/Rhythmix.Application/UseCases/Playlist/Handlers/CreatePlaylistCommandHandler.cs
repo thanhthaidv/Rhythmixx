@@ -21,6 +21,7 @@ public sealed class CreatePlaylistCommandHandler : IRequestHandler<CreatePlaylis
             Id = Guid.NewGuid(),
             Name = request.Name,
             Description = request.Description ?? string.Empty,
+            CoverImageUrl = request.CoverImageUrl,
             IsPublic = request.IsPublic,
             OwnerId = request.OwnerId,
             CreatedAt = DateTime.UtcNow
@@ -33,6 +34,7 @@ public sealed class CreatePlaylistCommandHandler : IRequestHandler<CreatePlaylis
             PlaylistId = id,
             Name = playlist.Name,
             Description = playlist.Description,
+            CoverImageUrl = playlist.CoverImageUrl,
             IsPublic = playlist.IsPublic,
             OwnerId = playlist.OwnerId,
             CreatedAt = playlist.CreatedAt

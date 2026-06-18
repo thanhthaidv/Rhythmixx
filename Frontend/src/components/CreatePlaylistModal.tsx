@@ -12,6 +12,7 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({ isOpen, onClo
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(true); 
+  const [coverImage, setCoverImage] = useState<File | null>(null);
   
   // 🌟 State quản lý tin nhắn báo lỗi (Bình thường để rỗng)
   const [error, setError] = useState(""); 
@@ -23,6 +24,7 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({ isOpen, onClo
     setName("");
     setDescription("");
     setIsPublic(true);
+    setCoverImage(null);
     setError(""); // Xóa lỗi cũ khi đóng
     onClose();
   };
@@ -41,6 +43,7 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({ isOpen, onClo
       name: name.trim(),
       description: description.trim() || undefined,
       isPublic,
+      coverImage: coverImage || undefined,
     });
     
     // Gọi hàm đóng modal và reset luôn
@@ -69,12 +72,28 @@ const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({ isOpen, onClo
           {/* Cụm Layout chính (Bìa giả lập + Ô nhập liệu) */}
           <div className="flex gap-4">
             {/* Bên trái: Hộp vuông ảnh bìa mặc định */}
-            <div className="w-40 h-40 bg-zinc-900 border border-zinc-800 rounded flex flex-col items-center justify-center text-zinc-500 shadow-inner shrink-0 group relative">
-              <Music size={44} className="text-zinc-600 group-hover:scale-110 transition-transform" />
+            <label className="w-40 h-40 bg-zinc-900 border border-zinc-800 rounded flex flex-col items-center justify-center text-zinc-500 shadow-inner shrink-0 group relative cursor-pointer overflow-hidden">
+              {coverImage ? (
+                <img
+                  src={URL.createObjectURL(coverImage)}
+                  alt="Playlist cover preview"
+                  className="size-full object-cover"
+                />
+              ) : (
+                <>
+                  <Music size={44} className="text-zinc-600 group-hover:scale-110 transition-transform" />
               <span className="absolute bottom-2 text-[10px] text-zinc-500 font-medium text-center px-1">
                 Ảnh bìa tự động
               </span>
-            </div>
+                </>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={(event) => setCoverImage(event.target.files?.[0] || null)}
+              />
+            </label>
 
             {/* Bên phải: 2 ô Input (Name & Description) */}
             <div className="flex-1 flex flex-col justify-between space-y-3">

@@ -11,6 +11,8 @@ public interface IPlaylistRepository : IRepository<Playlist, Guid>
     /// </summary>
     Task<IEnumerable<Playlist>> GetByOwnerIdAsync(Guid ownerId, IDbTransaction? transaction = null);
 
+    Task<IEnumerable<Playlist>> GetPublicAsync(IDbTransaction? transaction = null);
+
     /// <summary>
     /// Cập nhật tính công khai của một playlist
     /// </summary>
@@ -20,6 +22,7 @@ public interface IPlaylistRepository : IRepository<Playlist, Guid>
     /// Cập nhật thông tin playlist (tên, mô tả)
     /// </summary>
     Task<bool> UpdateInfoAsync(Guid playlistId, string name, string? description, IDbTransaction? transaction = null);
+    Task<bool> UpdateCoverImageAsync(Guid playlistId, string? coverImageUrl, IDbTransaction? transaction = null);
     
     /// <summary>
     /// Xóa playlist (kèm theo xóa tất cả tracks)

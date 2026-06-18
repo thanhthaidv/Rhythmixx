@@ -98,6 +98,8 @@ export interface PlaylistDto {
   description?: string;
   isPublic: boolean;
   ownerId: string;
+  trackCount?: number;
+  thumbnailUrl?: string;
   createdAt: string;
 }
 
@@ -118,6 +120,7 @@ export interface CreatePlaylistDto {
   name: string;
   description?: string;
   isPublic?: boolean;
+  coverImage?: File;
 }
 
 export interface PlaylistMediaDto {

@@ -27,11 +27,13 @@ const HomePage = () => {
   const navigate = useNavigate();
   const { currentSongId, setCurrentSongId, isPlaying, setIsPlaying, songs, setSongs } =
     useOutletContext<OutletContextType>();
-  const [playlists, setPlaylists] = useState<PlaylistDto[]>([]);
+  const [myPlaylists, setMyPlaylists] = useState<PlaylistDto[]>([]);
+  const [publicPlaylists, setPublicPlaylists] = useState<PlaylistDto[]>([]);
   const [albums, setAlbums] = useState<AlbumDto[]>([]);
 
   useEffect(() => {
-    playlistService.getAll().then(setPlaylists).catch(() => setPlaylists([]));
+    playlistService.getAll().then(setMyPlaylists).catch(() => setMyPlaylists([]));
+    playlistService.getPublic().then(setPublicPlaylists).catch(() => setPublicPlaylists([]));
     albumService.getMyAlbums().then(setAlbums).catch(() => setAlbums([]));
   }, []);
 
@@ -71,33 +73,92 @@ const HomePage = () => {
 
       <section>
         <h2 className="mb-4 text-xl font-semibold text-white">Your Playlists</h2>
-        {playlists.length === 0 ? (
+        {myPlaylists.length === 0 ? (
           <div className="rounded-lg border border-dashed border-zinc-800 py-10 text-center text-sm text-zinc-400">
             No playlists yet.
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {playlists.map((playlist) => (
-              <article
-                key={playlist.playlistId}
-                onClick={() => navigate(`/playlist/${playlist.playlistId}`)}
-                className="group cursor-pointer rounded-md bg-zinc-900/70 p-4 transition-colors hover:bg-zinc-800"
-              >
-                <div className="relative mb-3 flex aspect-square w-full items-center justify-center rounded-md bg-zinc-800 shadow-lg">
-                  <ListMusic className="size-10 text-zinc-400" />
-                  <button
-                    type="button"
-                    className="absolute bottom-2 right-2 flex size-11 translate-y-2 items-center justify-center rounded-full bg-green-500 opacity-0 shadow-xl transition-all group-hover:translate-y-0 group-hover:opacity-100"
-                  >
-                    <Play className="size-5 fill-black text-black" />
-                  </button>
-                </div>
-                <h3 className="truncate text-sm font-semibold text-white">{playlist.name}</h3>
-                <p className="mt-1 truncate text-xs text-zinc-400">
-                  Playlist - {playlist.isPublic ? "Public" : "Private"}
-                </p>
-              </article>
-            ))}
+            {myPlaylists.map((playlist) => {
+              const thumbnailUrl = resolveAssetUrl(playlist.thumbnailUrl);
+              return (
+                <article
+                  key={playlist.playlistId}
+                  onClick={() => navigate(`/playlist/${playlist.playlistId}`)}
+                  className="group cursor-pointer rounded-md bg-zinc-900/70 p-4 transition-colors hover:bg-zinc-800"
+                >
+                  <div className="relative mb-3">
+                    {thumbnailUrl ? (
+                      <img
+                        src={thumbnailUrl}
+                        alt={playlist.name}
+                        className="aspect-square w-full rounded-md object-cover shadow-lg"
+                      />
+                    ) : (
+                      <div className="flex aspect-square w-full items-center justify-center rounded-md bg-zinc-800 shadow-lg">
+                        <ListMusic className="size-10 text-zinc-400" />
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      className="absolute bottom-2 right-2 flex size-11 translate-y-2 items-center justify-center rounded-full bg-green-500 opacity-0 shadow-xl transition-all group-hover:translate-y-0 group-hover:opacity-100"
+                    >
+                      <Play className="size-5 fill-black text-black" />
+                    </button>
+                  </div>
+                  <h3 className="truncate text-sm font-semibold text-white">{playlist.name}</h3>
+                  <p className="mt-1 truncate text-xs text-zinc-400">
+                    Playlist - {playlist.trackCount ?? 0} songs - {playlist.isPublic ? "Public" : "Private"}
+                  </p>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      <section>
+        <h2 className="mb-4 text-xl font-semibold text-white">Public Playlists</h2>
+        {publicPlaylists.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-zinc-800 py-10 text-center text-sm text-zinc-400">
+            No public playlists yet.
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            {publicPlaylists.map((playlist) => {
+              const thumbnailUrl = resolveAssetUrl(playlist.thumbnailUrl);
+              return (
+                <article
+                  key={playlist.playlistId}
+                  onClick={() => navigate(`/playlist/${playlist.playlistId}`)}
+                  className="group cursor-pointer rounded-md bg-zinc-900/70 p-4 transition-colors hover:bg-zinc-800"
+                >
+                  <div className="relative mb-3">
+                    {thumbnailUrl ? (
+                      <img
+                        src={thumbnailUrl}
+                        alt={playlist.name}
+                        className="aspect-square w-full rounded-md object-cover shadow-lg"
+                      />
+                    ) : (
+                      <div className="flex aspect-square w-full items-center justify-center rounded-md bg-zinc-800 shadow-lg">
+                        <ListMusic className="size-10 text-zinc-400" />
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      className="absolute bottom-2 right-2 flex size-11 translate-y-2 items-center justify-center rounded-full bg-green-500 opacity-0 shadow-xl transition-all group-hover:translate-y-0 group-hover:opacity-100"
+                    >
+                      <Play className="size-5 fill-black text-black" />
+                    </button>
+                  </div>
+                  <h3 className="truncate text-sm font-semibold text-white">{playlist.name}</h3>
+                  <p className="mt-1 truncate text-xs text-zinc-400">
+                    Playlist - {playlist.trackCount ?? 0} songs
+                  </p>
+                </article>
+              );
+            })}
           </div>
         )}
       </section>

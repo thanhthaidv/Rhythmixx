@@ -30,7 +30,7 @@ public sealed class GetAlbumByIdQueryHandler : IRequestHandler<GetAlbumByIdQuery
             AlbumId = album.AlbumId,
             Title = album.Title,
             Description = album.Description,
-            CoverImageUrl = album.CoverImageUrl,
+            CoverImageUrl = album.CoverImageUrl ?? tracks.FirstOrDefault(media => !string.IsNullOrWhiteSpace(media.ThumbnailUrl))?.ThumbnailUrl,
             ReleaseDate = album.ReleaseDate,
             CreatedAt = album.CreatedAt,
             OwnerId = album.OwnerId,
@@ -62,10 +62,12 @@ public sealed class GetAlbumByIdQueryHandler : IRequestHandler<GetAlbumByIdQuery
 public sealed class GetMyAlbumsQueryHandler : IRequestHandler<GetMyAlbumsQuery, IEnumerable<AlbumDto>>
 {
     private readonly IAlbumRepository _albumRepository;
+    private readonly IMediaRepository _mediaRepository;
 
-    public GetMyAlbumsQueryHandler(IAlbumRepository albumRepository)
+    public GetMyAlbumsQueryHandler(IAlbumRepository albumRepository, IMediaRepository mediaRepository)
     {
         _albumRepository = albumRepository;
+        _mediaRepository = mediaRepository;
     }
 
     public async Task<IEnumerable<AlbumDto>> Handle(GetMyAlbumsQuery request, CancellationToken cancellationToken)
@@ -75,17 +77,17 @@ public sealed class GetMyAlbumsQueryHandler : IRequestHandler<GetMyAlbumsQuery, 
 
         foreach (var album in albums)
         {
-            var trackCount = await _albumRepository.GetTrackCountAsync(album.AlbumId);
+            var tracks = (await _mediaRepository.GetByAlbumIdAsync(album.AlbumId)).ToList();
             result.Add(new AlbumDto
             {
                 AlbumId = album.AlbumId,
                 Title = album.Title,
                 Description = album.Description,
-                CoverImageUrl = album.CoverImageUrl,
+                CoverImageUrl = album.CoverImageUrl ?? tracks.FirstOrDefault(media => !string.IsNullOrWhiteSpace(media.ThumbnailUrl))?.ThumbnailUrl,
                 ReleaseDate = album.ReleaseDate,
                 CreatedAt = album.CreatedAt,
                 OwnerId = album.OwnerId,
-                TrackCount = trackCount
+                TrackCount = tracks.Count
             });
         }
 
