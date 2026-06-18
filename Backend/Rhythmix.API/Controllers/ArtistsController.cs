@@ -115,6 +115,50 @@ public sealed class ArtistsController : ControllerBase
         return Ok(ApiResponse<object>.ToSuccess(media));
     }
 
+    [HttpPost]
+    [Authorize]
+    public async Task<IActionResult> CreateArtist([FromForm] CreateArtistRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            return BadRequest(ApiResponse<object>.ToFailure("Artist name is required."));
+        }
+
+        var name = request.Name.Trim();
+        using var connection = _connectionFactory.CreateConnection();
+
+        var existing = await connection.QuerySingleOrDefaultAsync<ArtistSearchItem>(
+            "SELECT ArtistId, Name, Description, AvatarUrl, CoverImageUrl, CreatedAt FROM Artists WHERE LOWER(Name) = LOWER(@Name)",
+            new { Name = name });
+
+        if (existing != null)
+        {
+            return Conflict(ApiResponse<object>.ToFailure("Artist name already exists."));
+        }
+
+        string? avatarUrl = null;
+        if (request.AvatarImage is { Length: > 0 })
+        {
+            avatarUrl = await SaveImageAsync(request.AvatarImage);
+        }
+
+        var artist = new ArtistSearchItem
+        {
+            ArtistId = Guid.NewGuid(),
+            Name = name,
+            Description = request.Description?.Trim(),
+            AvatarUrl = avatarUrl,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await connection.ExecuteAsync(
+            @"INSERT INTO Artists (ArtistId, Name, Description, AvatarUrl, CoverImageUrl, CreatedAt)
+              VALUES (@ArtistId, @Name, @Description, @AvatarUrl, @CoverImageUrl, @CreatedAt)",
+            artist);
+
+        return Ok(ApiResponse<object>.ToSuccess(artist));
+    }
+
     [HttpPost("{artistId:guid}/cover")]
     [Authorize]
     public async Task<IActionResult> UploadArtistCover(Guid artistId, [FromForm] IFormFile coverImage)
@@ -141,14 +185,33 @@ public sealed class ArtistsController : ControllerBase
             return NotFound(ApiResponse<object>.ToFailure("Artist not found."));
         }
 
-        await using var stream = coverImage.OpenReadStream();
-        var coverImageUrl = await _fileStorageService.SaveFileAsync(stream, coverImage.FileName, "images");
+        var coverImageUrl = await SaveImageAsync(coverImage);
 
         await connection.ExecuteAsync(
             "UPDATE Artists SET CoverImageUrl = @CoverImageUrl WHERE ArtistId = @ArtistId",
             new { ArtistId = artistId, CoverImageUrl = coverImageUrl });
 
         return Ok(ApiResponse<object>.ToSuccess(new { CoverImageUrl = coverImageUrl }));
+    }
+
+    private async Task<string> SaveImageAsync(IFormFile image)
+    {
+        var extension = Path.GetExtension(image.FileName).ToLowerInvariant();
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        if (!allowedExtensions.Contains(extension))
+        {
+            throw new InvalidOperationException("Invalid image format. Only jpg, png and webp files are allowed.");
+        }
+
+        await using var stream = image.OpenReadStream();
+        return await _fileStorageService.SaveFileAsync(stream, image.FileName, "images");
+    }
+
+    public sealed class CreateArtistRequest
+    {
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public IFormFile? AvatarImage { get; set; }
     }
 
     private sealed class ArtistSearchItem
