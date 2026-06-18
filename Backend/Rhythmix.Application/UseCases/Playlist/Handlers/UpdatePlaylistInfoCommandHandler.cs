@@ -48,6 +48,7 @@ public sealed class UpdatePlaylistInfoCommandHandler : IRequestHandler<UpdatePla
             PlaylistId = playlist.Id,
             Name = playlist.Name,
             Description = playlist.Description,
+            CoverImageUrl = playlist.CoverImageUrl,
             IsPublic = playlist.IsPublic,
             OwnerId = playlist.OwnerId,
             CreatedAt = playlist.CreatedAt

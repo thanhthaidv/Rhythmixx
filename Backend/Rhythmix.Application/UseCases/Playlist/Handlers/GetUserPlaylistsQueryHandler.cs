@@ -8,59 +8,46 @@ public sealed class GetUserPlaylistsQueryHandler : IRequestHandler<GetUserPlayli
 {
     private readonly IPlaylistRepository _playlistRepository;
     private readonly IPlaylistTrackRepository _playlistTrackRepository;
+    private readonly IMediaRepository _mediaRepository;
 
     public GetUserPlaylistsQueryHandler(
         IPlaylistRepository playlistRepository,
-        IPlaylistTrackRepository playlistTrackRepository)
+        IPlaylistTrackRepository playlistTrackRepository,
+        IMediaRepository mediaRepository)
     {
         _playlistRepository = playlistRepository;
         _playlistTrackRepository = playlistTrackRepository;
+        _mediaRepository = mediaRepository;
     }
 
     public async Task<IEnumerable<PlaylistSummaryDto>> Handle(
-        GetUserPlaylistsQuery request, 
+        GetUserPlaylistsQuery request,
         CancellationToken cancellationToken)
     {
-        // 1. Lấy danh sách playlist của user
         var playlists = await _playlistRepository.GetByOwnerIdAsync(request.UserId);
-        
-        if (!playlists.Any())
-        {
-            return Enumerable.Empty<PlaylistSummaryDto>();
-        }
-
-        // 2. Lấy số lượng track cho mỗi playlist
         var result = new List<PlaylistSummaryDto>();
-        
+
         foreach (var playlist in playlists)
         {
-            // Lấy số lượng track trong playlist
-            var tracks = await _playlistTrackRepository.GetTracksAsync(playlist.Id);
-            var trackCount = tracks.Count();
-            
-            // Lấy ảnh thumbnail từ bài hát đầu tiên (nếu có)
+            var tracks = (await _playlistTrackRepository.GetTracksAsync(playlist.Id)).ToList();
             var firstTrack = tracks.FirstOrDefault();
-            string? thumbnailUrl = null;
-            
-            if (firstTrack != null)
-            {
-                // Có thể cần IMediaRepository để lấy thumbnail
-                // Tạm thời để null hoặc lấy sau
-            }
-            
+            var firstMedia = firstTrack == null ? null : await _mediaRepository.GetByIdAsync(firstTrack.MediaId);
+
             result.Add(new PlaylistSummaryDto
             {
                 PlaylistId = playlist.Id,
                 Name = playlist.Name,
                 Description = playlist.Description,
+                CoverImageUrl = playlist.CoverImageUrl,
                 IsPublic = playlist.IsPublic,
-                TrackCount = trackCount,
-                ThumbnailUrl = thumbnailUrl,
+                OwnerId = playlist.OwnerId,
+                TrackCount = tracks.Count,
+                ThumbnailUrl = playlist.CoverImageUrl ?? firstMedia?.ThumbnailUrl,
                 CreatedAt = playlist.CreatedAt,
-                UpdatedAt = null // Có thể thêm UpdatedAt vào Playlist entity sau
+                UpdatedAt = null
             });
         }
-        
+
         return result;
     }
 }

@@ -53,11 +53,42 @@ export interface MediaItemDto {
 
 export interface UploadMediaDto {
   file: File;
+  coverImage?: File;
   title: string;
   description?: string;
   isPublic?: boolean;
   albumId?: string;
   genreId?: string;
+}
+
+// ============ Genre DTOs ============
+export interface GenreDto {
+  genreId: string;
+  name: string;
+  description?: string;
+}
+
+// ============ Album DTOs ============
+export interface AlbumDto {
+  albumId: string;
+  title: string;
+  description?: string;
+  coverImageUrl?: string;
+  releaseDate?: string;
+  createdAt: string;
+  ownerId: string;
+  trackCount: number;
+}
+
+export interface AlbumDetailDto extends AlbumDto {
+  tracks: MediaItemDto[];
+}
+
+export interface CreateAlbumDto {
+  title: string;
+  description?: string;
+  coverImageUrl?: string;
+  releaseDate?: string;
 }
 
 // ============ Playlist DTOs ============
@@ -67,6 +98,8 @@ export interface PlaylistDto {
   description?: string;
   isPublic: boolean;
   ownerId: string;
+  trackCount?: number;
+  thumbnailUrl?: string;
   createdAt: string;
 }
 
@@ -87,6 +120,7 @@ export interface CreatePlaylistDto {
   name: string;
   description?: string;
   isPublic?: boolean;
+  coverImage?: File;
 }
 
 export interface PlaylistMediaDto {
@@ -176,9 +210,48 @@ export interface CreateShareDto {
 }
 
 // ============ Search Result ============
+export interface SearchMediaDto {
+  mediaId: string;
+  title: string;
+  description?: string;
+  mediaType: string;
+  duration: number;
+  thumbnailUrl?: string;
+  genreId?: string;
+  viewCount: number;
+  createdAt: string;
+  ownerId: string;
+}
+
+export interface SearchPlaylistDto {
+  playlistId: string;
+  name: string;
+  description?: string;
+  isPublic: boolean;
+  ownerId: string;
+  trackCount: number;
+  createdAt: string;
+}
+
+export interface SearchGenrePlaylistDto {
+  genreId: string;
+  name: string;
+  description?: string;
+  trackCount: number;
+  tracks: SearchMediaDto[];
+}
+
 export interface SearchResultDto {
-  mediaItems: MediaItemDto[];
-  playlists: PlaylistDto[];
-  users: UserProfileDto[];
+  media: SearchMediaDto[];
+  playlists: SearchPlaylistDto[];
+  genrePlaylists: SearchGenrePlaylistDto[];
+  pagination?: {
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
 }
 

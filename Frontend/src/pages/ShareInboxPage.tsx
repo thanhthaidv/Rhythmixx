@@ -44,11 +44,14 @@ interface OutletContextType {
 
 const formatTimeAgo = (isoString: string): string => {
   try {
-    const messageDate = new Date(isoString);
+    const normalizedIsoString = /(?:z|[+-]\d{2}:\d{2})$/i.test(isoString)
+      ? isoString
+      : `${isoString}Z`;
+    const messageDate = new Date(normalizedIsoString);
     const now = new Date();
     
     // Tính khoảng cách thời gian theo mili-giây
-    const diffInSeconds = Math.floor((now.getTime() - messageDate.getTime()) / 1000);
+    const diffInSeconds = Math.max(0, Math.floor((now.getTime() - messageDate.getTime()) / 1000));
     
     if (diffInSeconds < 60) return "Vừa xong";
     
@@ -353,7 +356,6 @@ const ShareInboxPage = () => {
                         onClick={() => {
                           const trackId = item.trackData?.id;
                           if (trackId === undefined) return;
-                          if (typeof trackId !== "number") return;
 
                           const isCurrentPlaying = currentSongId === trackId;
                           if (setCurrentSongId) setCurrentSongId(trackId);
@@ -366,7 +368,7 @@ const ShareInboxPage = () => {
                         className="mt-2 flex items-center gap-3 bg-zinc-950/60 p-2 rounded-lg border border-zinc-800 max-w-sm group/item hover:border-zinc-700 transition-colors cursor-pointer active:scale-[0.98] select-none"
                       >
                         <div className="size-10 bg-zinc-800 rounded flex items-center justify-center text-zinc-400 shrink-0 relative">
-                          {typeof item.trackData.id === "number" && currentSongId === item.trackData.id && isPlaying ? (
+                          {currentSongId === item.trackData.id && isPlaying ? (
                             <Pause className="size-4 fill-white text-white absolute opacity-100 transition-opacity" />
                           ) : (
                             <>

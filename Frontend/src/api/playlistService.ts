@@ -62,10 +62,15 @@ export const playlistService = {
    * Requires: Authorization header
    */
   create: async (data: CreatePlaylistDto) => {
-    const res = await apiClient.post<ApiResponse<PlaylistDto>>(
-      "/playlists",
-      data,
-    );
+    const formData = new FormData();
+    formData.append('name', data.name);
+    if (data.description) formData.append('description', data.description);
+    if (data.isPublic !== undefined) formData.append('isPublic', String(data.isPublic));
+    if (data.coverImage) formData.append('coverImage', data.coverImage);
+
+    const res = await apiClient.post<ApiResponse<PlaylistDto>>('/playlists', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return res.data.data;
   },
 

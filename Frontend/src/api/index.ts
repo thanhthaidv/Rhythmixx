@@ -1,5 +1,7 @@
 export * from './authService';
 export * from './mediaService';
+export * from './genreService';
+export * from './albumService';
 export * from './playlistService';
 export * from './userService';
 export * from './searchService';

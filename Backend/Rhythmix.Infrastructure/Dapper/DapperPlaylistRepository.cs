@@ -6,10 +6,6 @@ using Rhythmix.Domain.Interfaces;
 
 namespace Rhythmix.Infrastructure.Dapper;
 
-/// <summary>
-/// Repository implementation for Playlist using Dapper
-/// Implements IPlaylistRepository with direct SQL queries
-/// </summary>
 public sealed class DapperPlaylistRepository : IPlaylistRepository
 {
     private readonly string _connectionString;
@@ -19,14 +15,14 @@ public sealed class DapperPlaylistRepository : IPlaylistRepository
         _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
     }
 
-     
     public async Task<Playlist?> GetByIdAsync(Guid id, IDbTransaction? transaction = null)
     {
         const string sql = @"
-            SELECT 
+            SELECT
                 PlaylistId AS Id,
                 Name,
                 Description,
+                CoverImageUrl,
                 IsPublic,
                 OwnerId,
                 CreatedAt
@@ -38,14 +34,14 @@ public sealed class DapperPlaylistRepository : IPlaylistRepository
         return await connection.QuerySingleOrDefaultAsync<Playlist>(sql, new { Id = id }, transaction);
     }
 
-     
     public async Task<IEnumerable<Playlist>> GetAllAsync(IDbTransaction? transaction = null)
     {
         const string sql = @"
-            SELECT 
+            SELECT
                 PlaylistId AS Id,
                 Name,
                 Description,
+                CoverImageUrl,
                 IsPublic,
                 OwnerId,
                 CreatedAt
@@ -57,14 +53,13 @@ public sealed class DapperPlaylistRepository : IPlaylistRepository
         return await connection.QueryAsync<Playlist>(sql, transaction: transaction);
     }
 
-     
     public async Task<Guid> CreateAsync(Playlist entity, IDbTransaction? transaction = null)
     {
         if (entity == null) throw new ArgumentNullException(nameof(entity));
 
         const string sql = @"
-            INSERT INTO [Playlists] (PlaylistId, Name, Description, IsPublic, OwnerId, CreatedAt)
-            VALUES (@Id, @Name, @Description, @IsPublic, @OwnerId, @CreatedAt)";
+            INSERT INTO [Playlists] (PlaylistId, Name, Description, CoverImageUrl, IsPublic, OwnerId, CreatedAt)
+            VALUES (@Id, @Name, @Description, @CoverImageUrl, @IsPublic, @OwnerId, @CreatedAt)";
 
         await using var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync();
@@ -73,6 +68,7 @@ public sealed class DapperPlaylistRepository : IPlaylistRepository
             Id = entity.Id,
             entity.Name,
             entity.Description,
+            entity.CoverImageUrl,
             entity.IsPublic,
             entity.OwnerId,
             entity.CreatedAt
@@ -81,7 +77,6 @@ public sealed class DapperPlaylistRepository : IPlaylistRepository
         return entity.Id;
     }
 
-     
     public async Task UpdateAsync(Playlist entity, IDbTransaction? transaction = null)
     {
         if (entity == null) throw new ArgumentNullException(nameof(entity));
@@ -90,6 +85,7 @@ public sealed class DapperPlaylistRepository : IPlaylistRepository
             UPDATE [Playlists]
             SET Name = @Name,
                 Description = @Description,
+                CoverImageUrl = @CoverImageUrl,
                 IsPublic = @IsPublic
             WHERE PlaylistId = @Id";
 
@@ -99,19 +95,16 @@ public sealed class DapperPlaylistRepository : IPlaylistRepository
         {
             entity.Name,
             entity.Description,
+            entity.CoverImageUrl,
             entity.IsPublic,
             Id = entity.Id
         }, transaction);
     }
 
-     
     public async Task DeleteAsync(Guid id, IDbTransaction? transaction = null)
     {
-        // Delete tracks associated with playlist first
-        const string deleteTracksSQL = @"DELETE FROM [PlayListTrack] WHERE PlaylistId = @PlaylistId";
-        
-        // Then delete playlist
-        const string deletePlaylistSQL = @"DELETE FROM [Playlists] WHERE PlaylistId = @PlaylistId";
+        const string deleteTracksSql = @"DELETE FROM [PlayListTrack] WHERE PlaylistId = @PlaylistId";
+        const string deletePlaylistSql = @"DELETE FROM [Playlists] WHERE PlaylistId = @PlaylistId";
 
         await using var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync();
@@ -119,8 +112,8 @@ public sealed class DapperPlaylistRepository : IPlaylistRepository
 
         try
         {
-            await connection.ExecuteAsync(deleteTracksSQL, new { PlaylistId = id }, localTransaction);
-            await connection.ExecuteAsync(deletePlaylistSQL, new { PlaylistId = id }, localTransaction);
+            await connection.ExecuteAsync(deleteTracksSql, new { PlaylistId = id }, localTransaction);
+            await connection.ExecuteAsync(deletePlaylistSql, new { PlaylistId = id }, localTransaction);
 
             if (transaction is null)
             {
@@ -133,18 +126,19 @@ public sealed class DapperPlaylistRepository : IPlaylistRepository
             {
                 localTransaction.Rollback();
             }
+
             throw;
         }
     }
 
-     
     public async Task<IEnumerable<Playlist>> GetByOwnerIdAsync(Guid ownerId, IDbTransaction? transaction = null)
     {
         const string sql = @"
-            SELECT 
+            SELECT
                 PlaylistId AS Id,
                 Name,
                 Description,
+                CoverImageUrl,
                 IsPublic,
                 OwnerId,
                 CreatedAt
@@ -157,7 +151,26 @@ public sealed class DapperPlaylistRepository : IPlaylistRepository
         return await connection.QueryAsync<Playlist>(sql, new { OwnerId = ownerId }, transaction);
     }
 
-     
+    public async Task<IEnumerable<Playlist>> GetPublicAsync(IDbTransaction? transaction = null)
+    {
+        const string sql = @"
+            SELECT
+                PlaylistId AS Id,
+                Name,
+                Description,
+                CoverImageUrl,
+                IsPublic,
+                OwnerId,
+                CreatedAt
+            FROM [Playlists]
+            WHERE IsPublic = 1
+            ORDER BY CreatedAt DESC";
+
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync();
+        return await connection.QueryAsync<Playlist>(sql, transaction: transaction);
+    }
+
     public async Task<bool> UpdateVisibilityAsync(Guid playlistId, bool isPublic, IDbTransaction? transaction = null)
     {
         const string sql = @"
@@ -167,17 +180,16 @@ public sealed class DapperPlaylistRepository : IPlaylistRepository
 
         await using var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync();
-        int rowsAffected = await connection.ExecuteAsync(sql, 
-            new { PlaylistId = playlistId, IsPublic = isPublic }, 
-            transaction);
+        var rowsAffected = await connection.ExecuteAsync(sql, new { PlaylistId = playlistId, IsPublic = isPublic }, transaction);
         return rowsAffected > 0;
     }
 
-     
     public async Task<bool> UpdateInfoAsync(Guid playlistId, string name, string? description, IDbTransaction? transaction = null)
     {
         if (string.IsNullOrWhiteSpace(name))
+        {
             throw new ArgumentException("Playlist name cannot be empty", nameof(name));
+        }
 
         const string sql = @"
             UPDATE [Playlists]
@@ -187,7 +199,7 @@ public sealed class DapperPlaylistRepository : IPlaylistRepository
 
         await using var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync();
-        int rowsAffected = await connection.ExecuteAsync(sql, new
+        var rowsAffected = await connection.ExecuteAsync(sql, new
         {
             PlaylistId = playlistId,
             Name = name.Trim(),
@@ -197,15 +209,23 @@ public sealed class DapperPlaylistRepository : IPlaylistRepository
         return rowsAffected > 0;
     }
 
-//
-    //
+    public async Task<bool> UpdateCoverImageAsync(Guid playlistId, string? coverImageUrl, IDbTransaction? transaction = null)
+    {
+        const string sql = @"
+            UPDATE [Playlists]
+            SET CoverImageUrl = @CoverImageUrl
+            WHERE PlaylistId = @PlaylistId";
+
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync();
+        var rowsAffected = await connection.ExecuteAsync(sql, new { PlaylistId = playlistId, CoverImageUrl = coverImageUrl }, transaction);
+        return rowsAffected > 0;
+    }
+
     public async Task<bool> DeletePlaylistAsync(Guid playlistId, IDbTransaction? transaction = null)
     {
-        // Delete tracks associated with playlist first
-        const string deleteTracksSQL = @"DELETE FROM [PlayListTrack] WHERE PlaylistId = @PlaylistId";
-        
-        // Then delete playlist
-        const string deletePlaylistSQL = @"DELETE FROM [Playlists] WHERE PlaylistId = @PlaylistId";
+        const string deleteTracksSql = @"DELETE FROM [PlayListTrack] WHERE PlaylistId = @PlaylistId";
+        const string deletePlaylistSql = @"DELETE FROM [Playlists] WHERE PlaylistId = @PlaylistId";
 
         await using var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync();
@@ -213,11 +233,8 @@ public sealed class DapperPlaylistRepository : IPlaylistRepository
 
         try
         {
-            // Delete all tracks in the playlist
-            await connection.ExecuteAsync(deleteTracksSQL, new { PlaylistId = playlistId }, localTransaction);
-            
-            // Delete the playlist
-            int rowsAffected = await connection.ExecuteAsync(deletePlaylistSQL, new { PlaylistId = playlistId }, localTransaction);
+            await connection.ExecuteAsync(deleteTracksSql, new { PlaylistId = playlistId }, localTransaction);
+            var rowsAffected = await connection.ExecuteAsync(deletePlaylistSql, new { PlaylistId = playlistId }, localTransaction);
 
             if (transaction is null)
             {
@@ -232,6 +249,7 @@ public sealed class DapperPlaylistRepository : IPlaylistRepository
             {
                 localTransaction.Rollback();
             }
+
             throw;
         }
     }
