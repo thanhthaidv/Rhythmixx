@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ListMusic, Play, Search } from "lucide-react";
 import { useNavigate, useOutletContext } from "react-router-dom";
+import { followService } from "../api/followService";
 import { searchService } from "../api/searchService";
 import { userService } from "../api/userService";
 import type { SearchGenrePlaylistDto, SearchMediaDto, SearchPlaylistDto, UserProfileDto } from "../types/api";
@@ -61,6 +62,7 @@ const SearchPage = () => {
   const [mediaResults, setMediaResults] = useState<SearchMediaDto[]>([]);
   const [playlistResults, setPlaylistResults] = useState<SearchPlaylistDto[]>([]);
   const [genrePlaylists, setGenrePlaylists] = useState<SearchGenrePlaylistDto[]>([]);
+  const [followedArtistIds, setFollowedArtistIds] = useState<Record<string, boolean>>({});
   const [isSearching, setIsSearching] = useState(false);
   const { setCurrentSongId, setIsPlaying, songs, setSongs } = useOutletContext<OutletContextType>();
 
@@ -111,6 +113,48 @@ const SearchPage = () => {
     setSongs((current) => (current.some((item) => item.id === song.id) ? current : [song, ...current]));
     setCurrentSongId(song.id);
     setIsPlaying(true);
+  };
+
+  useEffect(() => {
+    const artistIds = Array.from(new Set(mediaResults.map((item) => item.artistId).filter(Boolean))) as string[];
+    if (artistIds.length === 0) return;
+
+    let cancelled = false;
+    const loadStatuses = async () => {
+      const entries = await Promise.all(
+        artistIds.map(async (artistId) => {
+          try {
+            return [artistId, await followService.isFollowingArtist(artistId)] as const;
+          } catch {
+            return [artistId, false] as const;
+          }
+        })
+      );
+
+      if (!cancelled) {
+        setFollowedArtistIds((current) => ({ ...current, ...Object.fromEntries(entries) }));
+      }
+    };
+
+    void loadStatuses();
+    return () => {
+      cancelled = true;
+    };
+  }, [mediaResults]);
+
+  const toggleArtistFollow = async (artistId?: string) => {
+    if (!artistId) return;
+
+    const previous = followedArtistIds[artistId] ?? false;
+    setFollowedArtistIds((current) => ({ ...current, [artistId]: !previous }));
+
+    try {
+      const result = await followService.toggleArtist(artistId);
+      const next = result?.isFollowing ?? result?.IsFollowing ?? !previous;
+      setFollowedArtistIds((current) => ({ ...current, [artistId]: next }));
+    } catch {
+      setFollowedArtistIds((current) => ({ ...current, [artistId]: previous }));
+    }
   };
 
   const playGenrePlaylist = (playlist: SearchGenrePlaylistDto) => {
@@ -244,7 +288,25 @@ const SearchPage = () => {
                           <div className="truncate text-sm font-semibold text-white">{song.title}</div>
                           <div className="truncate text-xs text-zinc-400">{song.artist} - {song.album}</div>
                         </div>
-                        <span className="text-xs text-zinc-500">{song.duration}</span>
+                        <div className="flex shrink-0 items-center gap-3">
+                          {media.artistId && (
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                void toggleArtistFollow(media.artistId);
+                              }}
+                              className={`rounded-full px-3 py-1 text-xs font-bold transition-colors ${
+                                followedArtistIds[media.artistId]
+                                  ? "bg-zinc-800 text-white"
+                                  : "bg-white text-black hover:bg-zinc-200"
+                              }`}
+                            >
+                              {followedArtistIds[media.artistId] ? "Following" : "Follow Artist"}
+                            </button>
+                          )}
+                          <span className="text-xs text-zinc-500">{song.duration}</span>
+                        </div>
                       </div>
                     );
                   })}

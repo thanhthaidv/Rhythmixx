@@ -71,6 +71,14 @@ export interface GenreDto {
   description?: string;
 }
 
+export interface ArtistDto {
+  artistId: string;
+  name: string;
+  description?: string;
+  avatarUrl?: string;
+  createdAt?: string;
+}
+
 // ============ Album DTOs ============
 export interface AlbumDto {
   albumId: string;
