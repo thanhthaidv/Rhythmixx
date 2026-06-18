@@ -464,8 +464,12 @@ const SearchPage = () => {
                       onClick={() => navigate(`/profile/${user.id}`)}
                       className="flex cursor-pointer items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/60 p-3 hover:bg-zinc-800"
                     >
-                      {user.avatarUrl ? (
-                        <img src={user.avatarUrl} className="size-10 rounded-full object-cover" />
+                      {resolveAssetUrl(user.avatarUrl) ? (
+                        <img
+                          src={resolveAssetUrl(user.avatarUrl)}
+                          alt={user.displayName || user.userName || user.email}
+                          className="size-10 rounded-full object-cover"
+                        />
                       ) : (
                         <div className="flex size-10 items-center justify-center rounded-full bg-zinc-800 text-sm font-bold text-white">
                           {(user.displayName || user.userName || user.email).slice(0, 1).toUpperCase()}

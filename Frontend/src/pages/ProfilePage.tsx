@@ -18,7 +18,7 @@ import { useNotifications } from "../context/NotificationContext";
 import { userService } from "../api/userService";
 import { playlistService } from "../api/playlistService";
 import { followService } from "../api/followService";
-import type { PlaylistDto, UserProfileDto } from "../types/api";
+import type { ArtistDto, PlaylistDto, UserProfileDto } from "../types/api";
 import type { SongType } from "../utils/mediaMapping";
 
 // Định nghĩa interface cho Context nhận từ AppLayout (giống bên LikedSongsPage)
@@ -234,7 +234,25 @@ const ProfilePage = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersList, setFollowersList] = useState<UserProfileDto[]>([]);
   const [followingList, setFollowingList] = useState<UserProfileDto[]>([]);
+  const [followingArtists, setFollowingArtists] = useState<ArtistDto[]>([]);
   const [isFollowBusy, setIsFollowBusy] = useState(false);
+
+  const refreshFollowData = async () => {
+    const [counts, followers, following, artists, status] = await Promise.all([
+      followService.getUserCounts(targetId),
+      followService.getFollowers(targetId),
+      followService.getFollowing(targetId),
+      followService.getFollowingArtistsByUser(targetId),
+      isMyProfile ? Promise.resolve(false) : followService.isFollowing(targetId),
+    ]);
+
+    setFollowersCount(counts.followersCount);
+    setFollowingCount(counts.followingCount + (artists?.length ?? 0));
+    setFollowersList(followers || []);
+    setFollowingList(following || []);
+    setFollowingArtists(artists || []);
+    setIsFollowing(status);
+  };
 
   useEffect(() => {
     if (!targetId) return;
@@ -242,18 +260,19 @@ const ProfilePage = () => {
     let cancelled = false;
     const loadFollowData = async () => {
       try {
-        const [counts, followers, following, status] = await Promise.all([
+        const [counts, followers, following, artists, status] = await Promise.all([
           followService.getUserCounts(targetId),
           followService.getFollowers(targetId),
           followService.getFollowing(targetId),
+          followService.getFollowingArtistsByUser(targetId),
           isMyProfile ? Promise.resolve(false) : followService.isFollowing(targetId),
         ]);
-
         if (cancelled) return;
         setFollowersCount(counts.followersCount);
-        setFollowingCount(counts.followingCount);
+        setFollowingCount(counts.followingCount + (artists?.length ?? 0));
         setFollowersList(followers || []);
         setFollowingList(following || []);
+        setFollowingArtists(artists || []);
         setIsFollowing(status);
       } catch {
         if (cancelled) return;
@@ -261,6 +280,7 @@ const ProfilePage = () => {
         setFollowingCount(0);
         setFollowersList([]);
         setFollowingList([]);
+        setFollowingArtists([]);
         setIsFollowing(false);
       }
     };
@@ -291,7 +311,7 @@ const ProfilePage = () => {
     try {
       const result = await followService.toggleUser(targetId);
       const message = result?.message ?? result?.Message ?? "";
-      const next = message.toLowerCase().includes("unfollow") ? false : true;
+      const next = result?.isFollowing ?? result?.IsFollowing ?? !message.toLowerCase().includes("unfollow");
       setIsFollowing(next);
 
       if (next !== !previous) {
@@ -312,6 +332,8 @@ const ProfilePage = () => {
           isRead: false,
         } as any);
       }
+
+      await refreshFollowData();
     } catch {
       setIsFollowing(previous);
       setFollowersCount((count) => Math.max(0, count + (previous ? 1 : -1)));
@@ -330,7 +352,13 @@ const ProfilePage = () => {
     setFollowModal({
       isOpen: true,
       title: type === "followers" ? "Followers" : "Following",
-      list: type === "followers" ? followersList : followingList,
+      list:
+        type === "followers"
+          ? followersList
+          : [
+              ...followingList.map((item) => ({ ...item, itemType: "user" })),
+              ...followingArtists.map((item) => ({ ...item, itemType: "artist" })),
+            ],
     });
   };
 

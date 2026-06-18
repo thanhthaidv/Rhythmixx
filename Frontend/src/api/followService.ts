@@ -91,4 +91,9 @@ export const followService = {
     const res = await apiClient.get<ApiResponse<ArtistDto[]>>('/follows/artists/following');
     return res.data.data;
   },
+
+  getFollowingArtistsByUser: async (userId: string) => {
+    const res = await apiClient.get<ApiResponse<ArtistDto[]>>(`/follows/users/${userId}/artists/following`);
+    return res.data.data;
+  },
 };

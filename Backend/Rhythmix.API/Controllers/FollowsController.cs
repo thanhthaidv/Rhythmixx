@@ -40,7 +40,11 @@ namespace Rhythmix.API.Controllers
             }
 
             var message = await _mediator.Send(new ToggleFollowCommand(CurrentUserId, followingId));
-            return Ok(ApiResponse<object>.ToSuccess(new { Message = message }));
+            return Ok(ApiResponse<object>.ToSuccess(new
+            {
+                Message = message,
+                IsFollowing = string.Equals(message, "Followed", StringComparison.OrdinalIgnoreCase)
+            }));
         }
 
         [HttpGet("{followingId}/status")]
@@ -173,6 +177,21 @@ namespace Rhythmix.API.Controllers
                 return Unauthorized(ApiResponse<object>.ToFailure("Invalid token."));
             }
 
+            using var connection = _connectionFactory.CreateConnection();
+            const string sql = @"
+                SELECT a.ArtistId, a.Name, a.Description, a.AvatarUrl, a.CoverImageUrl, a.CreatedAt
+                FROM ArtistFollows af
+                INNER JOIN Artists a ON a.ArtistId = af.ArtistId
+                WHERE af.UserId = @UserId
+                ORDER BY af.FollowedAt DESC";
+
+            var artists = await connection.QueryAsync<FollowArtistItem>(sql, new { UserId = userId });
+            return Ok(ApiResponse<object>.ToSuccess(artists));
+        }
+
+        [HttpGet("users/{userId}/artists/following")]
+        public async Task<IActionResult> GetUserFollowingArtists(Guid userId)
+        {
             using var connection = _connectionFactory.CreateConnection();
             const string sql = @"
                 SELECT a.ArtistId, a.Name, a.Description, a.AvatarUrl, a.CoverImageUrl, a.CreatedAt
