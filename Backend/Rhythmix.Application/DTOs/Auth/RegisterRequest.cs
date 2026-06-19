@@ -14,9 +14,8 @@ public sealed class RegisterRequest
     public string UserName { get; set; } = string.Empty;
 
     [Required]
-    [MinLength(8, ErrorMessage = "Password must be at least 8 characters.")]
-    [RegularExpression(@"^(?=.*[A-Z])(?=.*\d).{8,}$", ErrorMessage = "Password must be at least 8 characters and contain at least one uppercase letter and one number.")]
-
+    [StringLength(64, MinimumLength = 8, ErrorMessage = "Password must be between 8 and 64 characters.")]
+    [RegularExpression(@"^(?=.*[A-Z])(?=.*\d).{8,64}$", ErrorMessage = "Password must be between 8 and 64 characters and contain at least one uppercase letter and one number.")]
     public string Password { get; set; } = string.Empty;
 
 
