@@ -43,8 +43,9 @@ public sealed class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResp
                 GenreId = m.GenreId,
                 ViewCount = m.ViewCount,
                 CreatedAt = m.CreatedAt,
-                OwnerId = m.OwnerId  
+                OwnerId = m.OwnerId
             }).ToList();
+
 
             response.Pagination.TotalItems = totalMedia;
         }
@@ -63,8 +64,10 @@ public sealed class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResp
                 IsPublic = p.IsPublic,
                 OwnerId = p.OwnerId,
                 CreatedAt = p.CreatedAt,
-                TrackCount = 0
+                TrackCount = p.TrackCount
             }).ToList();
+
+            // Console.WriteLine($"Handler Playlist Count: {response.Playlists.Count}");
 
             if (request.SearchType == SearchType.All)
             {
@@ -89,7 +92,6 @@ public sealed class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResp
 
         response.Pagination.Page = request.Page;
         response.Pagination.PageSize = request.PageSize;
-
         return response;
     }
 
@@ -162,7 +164,8 @@ public sealed class SearchQueryHandler : IRequestHandler<SearchQuery, SearchResp
             Description = p.Description,
             IsPublic = p.IsPublic,
             OwnerId = p.OwnerId,
-            CreatedAt = p.CreatedAt
+            CreatedAt = p.CreatedAt,
+            TrackCount = p.TrackCount
         }).ToList();
 
         response.Pagination = new PaginationInfo
