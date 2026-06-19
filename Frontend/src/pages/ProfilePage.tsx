@@ -20,6 +20,7 @@ import { playlistService } from "../api/playlistService";
 import { followService } from "../api/followService";
 import type { ArtistDto, PlaylistDto, UserProfileDto } from "../types/api";
 import type { SongType } from "../utils/mediaMapping";
+import { playHistoryService } from "../services/playHistoryService";
 
 // Định nghĩa interface cho Context nhận từ AppLayout (giống bên LikedSongsPage)
 interface OutletContextType {
@@ -125,7 +126,68 @@ const ProfilePage = () => {
 
   const [publicPlaylists, setPublicPlaylists] = useState<PlaylistDto[]>([]);
   const likedTracks = songs.filter((song) => song.isLiked);
-  const recentlyPlayed: { song: SongType; playedAt: Date }[] = [];
+  const maxHistoryCount = 10;
+  const [recentlyPlayed, setRecentlyPlayed] = useState<
+    { song: SongType; playedAt: Date }[]
+  >([]);
+  useEffect(() => {
+    if (!isMyProfile) return;
+    if (songs.length === 0) return;
+
+    const loadPlayHistories = async () => {
+      try {
+        const histories = await playHistoryService.getMyHistories(maxHistoryCount);
+
+        const mapped = histories
+          .map((item) => {
+            const song = songs.find((s) => s.id === item.mediaId);
+
+            if (!song) return null;
+
+            return {
+              song,
+              playedAt: new Date(item.playedAt),
+            };
+          })
+          .filter(Boolean) as { song: SongType; playedAt: Date }[];
+
+        setRecentlyPlayed(mapped);
+      } catch {
+        setRecentlyPlayed([]);
+      }
+    };
+
+    void loadPlayHistories();
+  }, [isMyProfile, songs]);
+  useEffect(() => {
+    if (!isMyProfile) return;
+    if (!currentSongId || !isPlaying) return;
+
+    const song = songs.find((item) => item.id === currentSongId);
+    if (!song) return;
+
+    const savePlayHistory = async () => {
+      try {
+        await playHistoryService.add(currentSongId);
+
+        setRecentlyPlayed((prev) => {
+          const next = [
+            {
+              song,
+              playedAt: new Date(),
+            },
+            ...prev.filter((item) => item.song.id !== song.id),
+          ].slice(0, maxHistoryCount);
+
+          return next;
+        });
+      } catch {
+        // Không chặn nghe nhạc nếu lưu lịch sử bị lỗi
+      }
+    };
+
+    void savePlayHistory();
+  }, [currentSongId, isPlaying, songs, isMyProfile]);
 
   useEffect(() => {
     playlistService
@@ -587,7 +649,7 @@ const ProfilePage = () => {
                               </div>
                             )
                           ) : (
-                            <span className="text-zinc-500 font-medium">{index + 1}</span>
+                            <span className="text-zinc-500 font-medium">{index + 1}/{maxHistoryCount}</span>
                           )}
                         </div>
 
