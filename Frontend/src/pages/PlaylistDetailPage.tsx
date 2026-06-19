@@ -33,6 +33,7 @@ interface OutletContextType {
     itemInfo: any,
     receiverName: string,
   ) => void;
+  onSetPlaylistQueue?: (playlistId: string, tracks: SongType[]) => void;
 }
 
 const formatDuration = (seconds?: number) => {
@@ -65,6 +66,7 @@ const PlaylistDetailPage = () => {
     songs,
     setSongs,
     onShareSuccess,
+    onSetPlaylistQueue,
   } = useOutletContext<OutletContextType>();
 
   const [playlistInfo, setPlaylistInfo] = useState<PlaylistDetailDto | null>(
@@ -89,6 +91,7 @@ const PlaylistDetailPage = () => {
       const mappedTracks = playlist.tracks.map(mapTrackToSong);
       setPlaylistInfo(playlist);
       setPlaylistSongs(mappedTracks);
+      onSetPlaylistQueue?.(id, mappedTracks);
       setSongs((prev) => {
         const existingIds = new Set(prev.map((song) => song.id));
         return [
