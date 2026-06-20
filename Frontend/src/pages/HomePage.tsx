@@ -32,7 +32,7 @@ const HomePage = () => {
   const [publicPlaylists, setPublicPlaylists] = useState<PlaylistDto[]>([]);
   const [albums, setAlbums] = useState<AlbumDto[]>([]);
   const [recommendations, setRecommendations] = useState<SongType[]>([]);
-  const [recommendationSource, setRecommendationSource] = useState<"gemini" | "database" | "">("");
+  const [recommendationSource, setRecommendationSource] = useState<"openrouter" | "database" | "">("");
 
   useEffect(() => {
     playlistService.getAll().then(setMyPlaylists).catch(() => setMyPlaylists([]));
@@ -89,7 +89,7 @@ const HomePage = () => {
           <h2 className="text-xl font-semibold text-white">Dành cho bạn</h2>
           {recommendationSource && (
             <span className="text-xs font-medium text-zinc-400">
-              {recommendationSource === "gemini" ? "Gợi ý bởi Gemini" : "Gợi ý từ thư viện"}
+              {recommendationSource === "openrouter" ? "Gợi ý bởi OpenRouter" : "Gợi ý từ thư viện"}
             </span>
           )}
         </div>

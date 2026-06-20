@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Rhythmix.Domain.Interfaces;
 
-public interface IGeminiRecommendationService
+public interface IOpenRouterRecommendationService
 {
     Task<List<(string Title, string Artist)>> GetRecommendationsAsync(
         List<(string Title, string Artist)> history,

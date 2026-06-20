@@ -14,14 +14,14 @@ namespace Rhythmix.Application.UseCases.AI;
 public class GetRecommendationsHandler : IRequestHandler<GetRecommendationsQuery, RecommendationResult>
 {
     private readonly IDbConnectionFactory _connectionFactory;
-    private readonly IGeminiRecommendationService _geminiRecommendationService;
+    private readonly IOpenRouterRecommendationService _openRouterRecommendationService;
 
     public GetRecommendationsHandler(
         IDbConnectionFactory connectionFactory,
-        IGeminiRecommendationService geminiRecommendationService)
+        IOpenRouterRecommendationService openRouterRecommendationService)
     {
         _connectionFactory = connectionFactory;
-        _geminiRecommendationService = geminiRecommendationService;
+        _openRouterRecommendationService = openRouterRecommendationService;
     }
 
     public async Task<RecommendationResult> Handle(GetRecommendationsQuery request, CancellationToken cancellationToken)
@@ -37,27 +37,29 @@ public class GetRecommendationsHandler : IRequestHandler<GetRecommendationsQuery
 
         try
         {
-        // 3. Request recommendations from Gemini.
-        var recommendedSongs = await _geminiRecommendationService.GetRecommendationsAsync(
+        var recommendedSongs = await _openRouterRecommendationService.GetRecommendationsAsync(
             recentHistory, favorites, catalog, limit);
 
         // 4. Tra cứu trong CSDL
         var matches = await SearchMediaItemsAsync(recommendedSongs);
         return matches.Count > 0
-            ? new RecommendationResult(matches, "gemini")
-            : new RecommendationResult(await GetDatabaseRecommendationsAsync(request.UserId, limit), "database", "gemini_no_library_match");
+            ? new RecommendationResult(matches, "openrouter")
+            : new RecommendationResult(await GetDatabaseRecommendationsAsync(request.UserId, limit), "database", "openrouter_no_library_match");
         }
         catch (InvalidOperationException)
         {
-            return new RecommendationResult(await GetDatabaseRecommendationsAsync(request.UserId, limit), "database", "gemini_key_missing");
+            return new RecommendationResult(await GetDatabaseRecommendationsAsync(request.UserId, limit), "database", "openrouter_key_missing");
         }
-        catch (HttpRequestException)
+        catch (HttpRequestException exception)
         {
-            return new RecommendationResult(await GetDatabaseRecommendationsAsync(request.UserId, limit), "database", "gemini_request_failed");
+            var reason = exception.StatusCode == System.Net.HttpStatusCode.TooManyRequests
+                ? "openrouter_rate_limited"
+                : "openrouter_request_failed";
+            return new RecommendationResult(await GetDatabaseRecommendationsAsync(request.UserId, limit), "database", reason);
         }
         catch (System.Text.Json.JsonException)
         {
-            return new RecommendationResult(await GetDatabaseRecommendationsAsync(request.UserId, limit), "database", "gemini_invalid_response");
+            return new RecommendationResult(await GetDatabaseRecommendationsAsync(request.UserId, limit), "database", "openrouter_invalid_response");
         }
     }
 

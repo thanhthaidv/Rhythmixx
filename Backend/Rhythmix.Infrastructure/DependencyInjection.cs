@@ -36,13 +36,13 @@ public static class DependencyInjection
         // Đăng ký NotificationService để inject INotificationHub qua SignalR
         services.AddScoped<INotificationHub, NotificationService>();
 
-        // Register Gemini recommendation service.
-        var geminiOptions = new GeminiOptions();
-        configuration.GetSection("Gemini").Bind(geminiOptions);
-        services.AddSingleton(geminiOptions);
-        services.AddHttpClient<IGeminiRecommendationService, GeminiRecommendationService>(client =>
+        // Register OpenRouter recommendation service.
+        var openRouterOptions = new OpenRouterOptions();
+        configuration.GetSection("OpenRouter").Bind(openRouterOptions);
+        services.AddSingleton(openRouterOptions);
+        services.AddHttpClient<IOpenRouterRecommendationService, OpenRouterRecommendationService>(client =>
         {
-            client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/v1beta/");
+            client.BaseAddress = new Uri("https://openrouter.ai/api/v1/");
         });
 
         return services;

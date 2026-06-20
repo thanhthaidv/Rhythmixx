@@ -2,7 +2,7 @@ import apiClient from './apiClient';
 type RecommendationResponse = {
   success: boolean;
   data: any[];
-  source: "gemini" | "database";
+  source: "openrouter" | "database";
   reason?: string;
 };
 
