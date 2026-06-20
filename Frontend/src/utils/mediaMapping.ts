@@ -24,12 +24,20 @@ const formatDuration = (seconds?: number) => {
   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 };
 
-const resolveAssetUrl = (url?: string) => {
-  if (!url) return undefined;
-  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("blob:")) {
+export const resolveAssetUrl = (url?: string | null) => {
+  if (!url) return "";
+
+  if (
+    url.startsWith("http://") ||
+    url.startsWith("https://") ||
+    url.startsWith("blob:")
+  ) {
     return url;
   }
-  return `${API_ORIGIN}${url}`;
+
+  const normalizedUrl = url.startsWith("/") ? url : `/${url}`;
+
+  return `${API_ORIGIN}${encodeURI(normalizedUrl)}`;
 };
 
 export const resolveArtistName = (artistName?: string, ownerName?: string, title?: string) => {
@@ -42,20 +50,66 @@ export const resolveArtistName = (artistName?: string, ownerName?: string, title
   return "Unknown artist";
 };
 
+const resolveUrl = (url?: string | null) => {
+  if (!url) return "";
+
+  if (
+    url.startsWith("http://") ||
+    url.startsWith("https://") ||
+    url.startsWith("blob:")
+  ) {
+    return url;
+  }
+
+  const normalizedUrl = url.startsWith("/") ? url : `/${url}`;
+  return `${API_ORIGIN}${encodeURI(normalizedUrl)}`;
+};
+
 export const mapMediaToSong = (media: MediaItemDto): SongType => {
-  const mediaType = media.mediaType?.toLowerCase() || "audio";
-  const streamUrl = mediaService.getMediaStream(media.mediaId);
+  const mediaKind = (
+    media.contentType ||
+    media.mimeType ||
+    media.mediaType ||
+    ""
+  )
+    .toString()
+    .toLowerCase()
+    .trim();
+
+  const isVideoMedia =
+    mediaKind === "video" ||
+    mediaKind.startsWith("video/") ||
+    mediaKind.includes("mp4");
+
+  const isAudioMedia =
+    mediaKind === "audio" ||
+    mediaKind.startsWith("audio/") ||
+    mediaKind.includes("mpeg") ||
+    mediaKind.includes("mp3") ||
+    mediaKind.includes("wav");
+
+  const streamUrl = resolveUrl(mediaService.getMediaStream(media.mediaId));
 
   return {
     id: media.mediaId,
-    title: media.title,
-    artist: resolveArtistName(media.artistName, media.ownerName, media.title),
+    title: media.title ?? "Unknown title",
+    artist: resolveArtistName(
+      media.artistName,
+      media.ownerName,
+      media.title
+    ),
     album: "Single",
     duration: formatDuration(media.duration),
     isLiked: false,
+
+    // PlayerBar phát bằng url này
     url: streamUrl,
-    videoUrl: mediaType === "video" ? streamUrl : undefined,
-    posterUrl: resolveAssetUrl(media.thumbnailUrl),
-    mediaType,
+
+    // Chỉ bài video mới có videoUrl
+    videoUrl: isVideoMedia ? streamUrl : "",
+
+    posterUrl: resolveUrl(media.thumbnailUrl),
+
+    mediaType: isVideoMedia ? "video" : isAudioMedia ? "audio" : "audio",
   };
 };

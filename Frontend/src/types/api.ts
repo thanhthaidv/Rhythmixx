@@ -51,6 +51,7 @@ export interface MediaItemDto {
   viewCount?: number;
   createdAt: string;
   updatedAt?: string;
+  contentType?: string;
 }
 
 export interface UploadMediaDto {
