@@ -7,6 +7,7 @@ import { albumService } from "../api/albumService";
 import { mediaService } from "../api/mediaService";
 import { playlistService } from "../api/playlistService";
 import { mapMediaToSong, type SongType } from "../utils/mediaMapping";
+import { userService } from "../api/userService";
 import type { AlbumDto, PlaylistDto } from "../types/api";
 
 interface OutletContextType {
@@ -35,6 +36,7 @@ const LibraryPage = () => {
   const [myMedia, setMyMedia] = useState<SongType[]>([]);
   const [playlists, setPlaylists] = useState<PlaylistDto[]>([]);
   const [albums, setAlbums] = useState<AlbumDto[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 
   const loadMyMedia = async () => {
     const mediaItems = await mediaService.getMyMedia();
@@ -56,16 +58,36 @@ const LibraryPage = () => {
     setAlbums(items);
   };
 
+  const loadFavoriteIds = async () => {
+    const favorites = await userService.getFavorites();
+
+    console.log("LIBRARY FAVORITES:", favorites);
+
+    const ids = favorites
+      .map((item: any) => String(item))
+      .filter((id: string) => id !== "");
+
+    setFavoriteIds(ids);
+
+    setSongs((prev) =>
+      prev.map((song) => ({
+        ...song,
+        isLiked: ids.includes(String(song.id)),
+      }))
+    );
+  };
+
   useEffect(() => {
     loadMyMedia().catch(() => setMyMedia([]));
     loadPlaylists().catch(() => setPlaylists([]));
     loadAlbums().catch(() => setAlbums([]));
+    loadFavoriteIds().catch(() => setFavoriteIds([]));
   }, []);
 
   const visibleMedia = activeTab === "playlists" || activeTab === "albums" ? [] : myMedia;
   const visiblePlaylists = activeTab === "albums" ? [] : playlists;
   const visibleAlbums = activeTab === "playlists" ? [] : albums;
-  const likedCount = songs.filter((song) => song.isLiked).length;
+  const likedCount = favoriteIds.length;
 
   const playAlbum = async (album: AlbumDto) => {
     const detail = await albumService.getById(album.albumId);

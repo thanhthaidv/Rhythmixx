@@ -11,6 +11,7 @@ import {
   NotificationContext,
 } from "../context/NotificationContext";
 import { mapMediaToSong, type SongType } from "../utils/mediaMapping";
+import { userService } from "../api/userService";
 
 interface InboxMessageType {
   id: string;
@@ -109,6 +110,28 @@ const handlePrevious = () => {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (songs.length === 0) return;
+
+    const loadFavorites = async () => {
+      try {
+        const favorites = await userService.getFavorites();
+
+        setSongs((prev) =>
+          prev.map((song) => ({
+            ...song,
+            isLiked: favorites.some(f => f.mediaId === song.id)
+          }))
+        );
+      } catch {
+        // Nếu chưa đăng nhập hoặc token lỗi thì bỏ qua
+      }
+    };
+
+    void loadFavorites();
+  }, [songs.length]);
+
 
   // SignalR real-time notifications
   useEffect(() => {
