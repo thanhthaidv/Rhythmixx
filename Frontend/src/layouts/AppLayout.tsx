@@ -121,7 +121,7 @@ const handlePrevious = () => {
         setSongs((prev) =>
           prev.map((song) => ({
             ...song,
-            isLiked: favorites.some(f => f.mediaId === song.id)
+            isLiked: favorites.includes(song.id)
           }))
         );
       } catch {

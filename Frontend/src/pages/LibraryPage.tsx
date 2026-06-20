@@ -32,7 +32,7 @@ const LibraryPage = () => {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isCreatePlaylistOpen, setIsCreatePlaylistOpen] = useState(false);
   // Logic lọc dữ liệu dựa trên Tab đang chọn
-  const { setCurrentSongId, setIsPlaying, songs, setSongs } = useOutletContext<OutletContextType>();
+  const { setCurrentSongId, setIsPlaying, setSongs } =useOutletContext<OutletContextType>();
   const [myMedia, setMyMedia] = useState<SongType[]>([]);
   const [playlists, setPlaylists] = useState<PlaylistDto[]>([]);
   const [albums, setAlbums] = useState<AlbumDto[]>([]);
