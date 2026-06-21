@@ -1,7 +1,7 @@
 import SideBar from "../components/SideBar";
 import PlayerBar from "../components/PlayerBar";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import AuthModal from "../components/AuthModal";
 import VideoPlayerModal from "../components/VideoPlayerModal";
 import QueueSidebar from "../components/QueueSidebar";
@@ -13,6 +13,7 @@ import {
 import { mapMediaToSong, type SongType } from "../utils/mediaMapping";
 import type { ShareItemDto } from "../types/api";
 import { userService } from "../api/userService";
+import { playHistoryService } from "../services/playHistoryService";
 
 interface InboxMessageType {
   id: string;
@@ -50,6 +51,7 @@ const AppLayout = () => {
   const [songs, setSongs] = useState<SongType[]>([]);
   const [currentSongId, setCurrentSongId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const lastRecordedSongIdRef = useRef<string | null>(null);
 
   const [audioCurrentTime, setAudioCurrentTime] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
@@ -177,6 +179,19 @@ const AppLayout = () => {
 
     void loadFavorites();
   }, [songs.length]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !currentSongId || !isPlaying) return;
+    if (lastRecordedSongIdRef.current === currentSongId) return;
+
+    lastRecordedSongIdRef.current = currentSongId;
+
+    void playHistoryService.add(currentSongId).catch(() => {
+      if (lastRecordedSongIdRef.current === currentSongId) {
+        lastRecordedSongIdRef.current = null;
+      }
+    });
+  }, [currentSongId, isPlaying, isAuthenticated]);
 
 
   // SignalR real-time notifications
