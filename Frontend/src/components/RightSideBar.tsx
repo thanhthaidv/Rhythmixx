@@ -191,9 +191,9 @@ const RightSideBar = ({
     <aside
       className={`absolute bottom-0 right-2 top-2 z-30 hidden w-[360px] overflow-y-auto rounded-lg bg-white text-zinc-950 shadow-2xl transition-[transform,opacity] duration-300 ease-out will-change-transform dark:bg-zinc-900 dark:text-white xl:block ${
         isOpen
-          ? "translate-x-0 opacity-100"
-          : "pointer-events-none translate-x-[calc(100%+1rem)] opacity-0"
-      }`}
+        ? "translate-x-0 opacity-100"
+        : "pointer-events-none translate-x-[calc(100%+1rem)] opacity-0"
+        }`}
       aria-hidden={!isOpen}
     >
       <div className="space-y-5 p-4">
@@ -308,61 +308,61 @@ const RightSideBar = ({
             </section>
 
             {/* About artist */}
-            <section className="overflow-hidden rounded-2xl bg-zinc-800/80">
-              <div className="relative h-44">
-                {artistImageUrl ? (
-                  <img
-                    src={artistImageUrl}
-                    alt={currentTrack.artist}
-                    onError={handleImageError}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-zinc-700">
-                    <Music2 className="size-12 text-zinc-400" />
-                  </div>
-                )}
+            <div className="space-y-3">
+              <h3 className="text-base font-bold text-white">
+                About the artist
+              </h3>
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <section className="overflow-hidden rounded-2xl bg-transparent">
+                <div className="h-44 overflow-hidden rounded-2xl">
+                  {artistImageUrl ? (
+                    <img
+                      src={artistImageUrl}
+                      alt={currentTrack.artist}
+                      onError={handleImageError}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-zinc-700">
+                      <Music2 className="size-12 text-zinc-400" />
+                    </div>
+                  )}
+                </div>
 
-                <h3 className="absolute left-4 top-4 text-base font-bold text-white">
-                  About the artist
-                </h3>
+                <div className="space-y-3 pt-4">
+                  <p className="text-xl font-bold text-white">
+                    {currentTrack.artist}
+                  </p>
 
-                <p className="absolute bottom-4 left-4 text-xl font-bold text-white">
-                  {currentTrack.artist}
-                </p>
-              </div>
+                  <p className="text-sm font-semibold text-white">
+                    {getFakeMonthlyListeners(currentTrack)} monthly listeners
+                  </p>
 
-              <div className="space-y-3 p-4">
-                <p className="text-sm font-semibold text-white">
-                  {getFakeMonthlyListeners(currentTrack)} monthly listeners
-                </p>
+                  <p className="text-sm leading-6 text-zinc-300">
+                    {currentTrack.artist} là nghệ sĩ đứng sau bản nhạc{" "}
+                    <span className="font-medium text-white">
+                      {currentTrack.title}
+                    </span>
+                    . Bài hát mang màu sắc hiện đại, phù hợp để nghe khi thư giãn,
+                    học tập hoặc tận hưởng không gian âm nhạc của Rhythmix.
+                  </p>
 
-                <p className="text-sm leading-6 text-zinc-300">
-                  {currentTrack.artist} là nghệ sĩ đứng sau bản nhạc{" "}
-                  <span className="font-medium text-white">
-                    {currentTrack.title}
-                  </span>
-                  . Bài hát mang màu sắc hiện đại, phù hợp để nghe khi thư giãn,
-                  học tập hoặc tận hưởng không gian âm nhạc của Rhythmix.
-                </p>
-
-                <button
-                  type="button"
-                  disabled={!currentTrack.artistId || isFollowLoading}
-                  onClick={() => void toggleFollow()}
-                  title={currentTrack.artistId ? "Theo dõi nghệ sĩ" : "Bài hát chưa có nghệ sĩ"}
+                  <button
+                    type="button"
+                    disabled={!currentTrack.artistId || isFollowLoading}
+                    onClick={() => void toggleFollow()}
+                    title={currentTrack.artistId ? "Theo dõi nghệ sĩ" : "Bài hát chưa có nghệ sĩ"}
                   className={`rounded-full border px-4 py-1.5 text-sm font-bold transition ${
                     isFollowing
-                      ? "border-green-500 bg-green-500 text-black hover:bg-green-400"
-                      : "border-zinc-500 text-white hover:border-white"
-                  } ${!currentTrack.artistId || isFollowLoading ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
-                >
-                  {isFollowLoading ? "Đang xử lý" : isFollowing ? "Đang theo dõi" : "Theo dõi"}
-                </button>
-              </div>
-            </section>
+                        ? "border-green-500 bg-green-500 text-black hover:bg-green-400"
+                        : "border-zinc-500 text-white hover:border-white"
+                      } ${!currentTrack.artistId || isFollowLoading ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+                  >
+                    {isFollowLoading ? "Đang xử lý" : isFollowing ? "Đang theo dõi" : "Theo dõi"}
+                  </button>
+                </div>
+              </section>
+            </div>
 
             {/* Small info card */}
             <section className="rounded-2xl bg-zinc-800/70 p-4">
@@ -390,116 +390,116 @@ const RightSideBar = ({
 
       {createPortal(
         <>
-      {currentTrack && (
-        <ShareModal
-          isOpen={isShareModalOpen}
-          onClose={() => setIsShareModalOpen(false)}
-          itemToShare={{
-            type: isVideoTrack ? "video" : "song",
-            id: currentTrack.id,
-            title: currentTrack.title,
-            subtitle: currentTrack.artist,
-          }}
-          onShareSuccess={(receiverName, share) => {
-            onShareSuccess?.(
-              isVideoTrack ? "video" : "song",
-              currentTrack,
-              receiverName,
-              share,
-            );
-          }}
-        />
-      )}
-
-      {isPlaylistPickerOpen && currentTrack && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-lg border border-zinc-800 bg-zinc-900 p-5 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <div>
-                <h3 className="text-base font-bold text-white">Thêm vào playlist</h3>
-                <p className="mt-1 max-w-[280px] truncate text-xs text-zinc-400">{currentTrack.title}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsPlaylistPickerOpen(false)}
-                className="rounded-full p-1.5 text-zinc-400 transition hover:bg-zinc-800 hover:text-white"
-                aria-label="Đóng"
-                title="Đóng"
-              >
-                <X className="size-4" />
-              </button>
-            </div>
-
-            {playlistError && (
-              <p className="mt-3 rounded-md border border-red-900/60 bg-red-950/30 px-3 py-2 text-xs text-red-300">
-                {playlistError}
-              </p>
-            )}
-
-            <div className="custom-scrollbar mt-3 max-h-64 space-y-2 overflow-y-auto pr-1">
-              {isLoadingPlaylists ? (
-                <div className="flex justify-center py-8 text-zinc-400">
-                  <LoaderCircle className="size-5 animate-spin" />
-                </div>
-              ) : playlists.length > 0 ? (
-                playlists.map((playlist) => {
-                  const playlistCover = resolveAssetUrl(playlist.coverImageUrl || playlist.thumbnailUrl);
-                  const isAdding = addingPlaylistId === playlist.playlistId;
-
-                  return (
-                    <button
-                      key={playlist.playlistId}
-                      type="button"
-                      disabled={Boolean(addingPlaylistId)}
-                      onClick={() => void addCurrentTrackToPlaylist(playlist)}
-                      className="flex w-full items-center gap-3 rounded-md p-2 text-left transition hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-60"
-                    >
-                      {playlistCover ? (
-                        <img src={playlistCover} alt="" className="size-11 rounded object-cover" />
-                      ) : (
-                        <div className="flex size-11 items-center justify-center rounded bg-zinc-800">
-                          <ListPlus className="size-5 text-zinc-400" />
-                        </div>
-                      )}
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-semibold text-white">{playlist.name}</span>
-                        <span className="block text-xs text-zinc-400">{playlist.trackCount ?? 0} bài hát</span>
-                      </span>
-                      {isAdding ? <LoaderCircle className="size-4 animate-spin text-zinc-400" /> : <ListPlus className="size-4 text-zinc-400" />}
-                    </button>
-                  );
-                })
-              ) : (
-                <p className="py-5 text-center text-sm text-zinc-500">Bạn chưa có playlist nào.</p>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                setIsPlaylistPickerOpen(false);
-                setIsCreatePlaylistOpen(true);
+          {currentTrack && (
+            <ShareModal
+              isOpen={isShareModalOpen}
+              onClose={() => setIsShareModalOpen(false)}
+              itemToShare={{
+                type: isVideoTrack ? "video" : "song",
+                id: currentTrack.id,
+                title: currentTrack.title,
+                subtitle: currentTrack.artist,
               }}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-md bg-white px-4 py-2.5 text-sm font-bold text-black transition hover:bg-zinc-200"
-            >
-              <ListPlus className="size-4" /> Tạo playlist mới
-            </button>
-          </div>
-        </div>
-      )}
+              onShareSuccess={(receiverName, share) => {
+                onShareSuccess?.(
+                  isVideoTrack ? "video" : "song",
+                  currentTrack,
+                  receiverName,
+                  share,
+                );
+              }}
+            />
+          )}
 
-      <CreatePlaylistModal
-        isOpen={isCreatePlaylistOpen}
-        onClose={() => setIsCreatePlaylistOpen(false)}
-        onPlaylistCreated={handlePlaylistCreated}
-      />
+          {isPlaylistPickerOpen && currentTrack && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+              <div className="w-full max-w-md rounded-lg border border-zinc-800 bg-zinc-900 p-5 shadow-2xl">
+                <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                  <div>
+                    <h3 className="text-base font-bold text-white">Thêm vào playlist</h3>
+                    <p className="mt-1 max-w-[280px] truncate text-xs text-zinc-400">{currentTrack.title}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsPlaylistPickerOpen(false)}
+                    className="rounded-full p-1.5 text-zinc-400 transition hover:bg-zinc-800 hover:text-white"
+                    aria-label="Đóng"
+                    title="Đóng"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
 
-      {playlistSuccess && (
-        <div className="fixed bottom-24 right-4 z-[110] flex items-center gap-2 rounded-md bg-green-500 px-3 py-2 text-sm font-semibold text-black shadow-lg">
-          <Check className="size-4" />
-          {playlistSuccess}
-        </div>
-      )}
+                {playlistError && (
+                  <p className="mt-3 rounded-md border border-red-900/60 bg-red-950/30 px-3 py-2 text-xs text-red-300">
+                    {playlistError}
+                  </p>
+                )}
+
+                <div className="custom-scrollbar mt-3 max-h-64 space-y-2 overflow-y-auto pr-1">
+                  {isLoadingPlaylists ? (
+                    <div className="flex justify-center py-8 text-zinc-400">
+                      <LoaderCircle className="size-5 animate-spin" />
+                    </div>
+                  ) : playlists.length > 0 ? (
+                    playlists.map((playlist) => {
+                      const playlistCover = resolveAssetUrl(playlist.coverImageUrl || playlist.thumbnailUrl);
+                      const isAdding = addingPlaylistId === playlist.playlistId;
+
+                      return (
+                        <button
+                          key={playlist.playlistId}
+                          type="button"
+                          disabled={Boolean(addingPlaylistId)}
+                          onClick={() => void addCurrentTrackToPlaylist(playlist)}
+                          className="flex w-full items-center gap-3 rounded-md p-2 text-left transition hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-60"
+                        >
+                          {playlistCover ? (
+                            <img src={playlistCover} alt="" className="size-11 rounded object-cover" />
+                          ) : (
+                            <div className="flex size-11 items-center justify-center rounded bg-zinc-800">
+                              <ListPlus className="size-5 text-zinc-400" />
+                            </div>
+                          )}
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-semibold text-white">{playlist.name}</span>
+                            <span className="block text-xs text-zinc-400">{playlist.trackCount ?? 0} bài hát</span>
+                          </span>
+                          {isAdding ? <LoaderCircle className="size-4 animate-spin text-zinc-400" /> : <ListPlus className="size-4 text-zinc-400" />}
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <p className="py-5 text-center text-sm text-zinc-500">Bạn chưa có playlist nào.</p>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPlaylistPickerOpen(false);
+                    setIsCreatePlaylistOpen(true);
+                  }}
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-md bg-white px-4 py-2.5 text-sm font-bold text-black transition hover:bg-zinc-200"
+                >
+                  <ListPlus className="size-4" /> Tạo playlist mới
+                </button>
+              </div>
+            </div>
+          )}
+
+          <CreatePlaylistModal
+            isOpen={isCreatePlaylistOpen}
+            onClose={() => setIsCreatePlaylistOpen(false)}
+            onPlaylistCreated={handlePlaylistCreated}
+          />
+
+          {playlistSuccess && (
+            <div className="fixed bottom-24 right-4 z-[110] flex items-center gap-2 rounded-md bg-green-500 px-3 py-2 text-sm font-semibold text-black shadow-lg">
+              <Check className="size-4" />
+              {playlistSuccess}
+            </div>
+          )}
         </>,
         document.body,
       )}
