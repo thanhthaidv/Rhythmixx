@@ -9,6 +9,8 @@ import {
   Maximize2,
   Share2,
   ListMusic,
+  PanelRightOpen,
+  PanelRightClose,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import ShareModal from "./ShareModal";
@@ -31,6 +33,8 @@ interface PlayerBarProps {
     share?: ShareItemDto,
   ) => void;
   onToggleQueueSidebar?: () => void;
+  onToggleNowPlayingSidebar?: () => void;
+  isNowPlayingSidebarOpen?: boolean;
   onTrackEnded?: () => void;
   onNext: () => void;
   onPrevious: () => void;
@@ -63,6 +67,8 @@ const PlayerBar = ({
   seekTrigger,
   onShareSuccess,
   onToggleQueueSidebar,
+  onToggleNowPlayingSidebar,
+  isNowPlayingSidebarOpen,
   onTrackEnded,
   onNext,
   onPrevious,
@@ -381,6 +387,22 @@ useEffect(() => {
           aria-label="Open queue"
         >
           <ListMusic className="size-4" />
+        </button>
+        <button
+          type="button"
+          disabled={!currentTrack}
+          onClick={() => onToggleNowPlayingSidebar?.()}
+          className={`hidden text-zinc-400 transition-colors hover:text-white cursor-pointer xl:block ${
+            !currentTrack ? "cursor-not-allowed opacity-30 hover:text-zinc-400" : ""
+          }`}
+          aria-label={isNowPlayingSidebarOpen ? "Đóng thông tin bài hát" : "Mở thông tin bài hát"}
+          title={isNowPlayingSidebarOpen ? "Đóng thông tin bài hát" : "Mở thông tin bài hát"}
+        >
+          {isNowPlayingSidebarOpen ? (
+            <PanelRightClose className="size-4" />
+          ) : (
+            <PanelRightOpen className="size-4" />
+          )}
         </button>
         {/* Volume UI */}
         <Volume2 className="size-4 text-zinc-400" />

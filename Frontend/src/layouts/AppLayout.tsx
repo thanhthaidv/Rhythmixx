@@ -6,6 +6,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import AuthModal from "../components/AuthModal";
 import VideoPlayerModal from "../components/VideoPlayerModal";
 import QueueSidebar from "../components/QueueSidebar";
+import { ChevronLeft } from "lucide-react";
 import { mediaService, signalRService } from "../api";
 import {
   useNotifications,
@@ -59,6 +60,7 @@ const AppLayout = () => {
   const [seekTrigger, setSeekTrigger] = useState<{ time: number } | null>(null);
 
   const [isQueueOpen, setIsQueueOpen] = useState(false);
+  const [isNowPlayingSidebarOpen, setIsNowPlayingSidebarOpen] = useState(false);
   const [playlistQueue, setPlaylistQueue] = useState<SongType[]>([]);
 
   const canShowAppShell = isAuthenticated || isLandingPage;
@@ -194,6 +196,12 @@ const AppLayout = () => {
     });
   }, [currentSongId, isPlaying, isAuthenticated]);
 
+  useEffect(() => {
+    if (currentSongId) {
+      setIsNowPlayingSidebarOpen(true);
+    }
+  }, [currentSongId]);
+
 
   // SignalR real-time notifications
   useEffect(() => {
@@ -293,7 +301,7 @@ const AppLayout = () => {
 
       {canShowAppShell && (
         <>
-          <div className="flex min-h-0 flex-1 gap-2 overflow-hidden p-2 pb-0">
+          <div className="relative flex min-h-0 flex-1 gap-2 overflow-hidden p-2 pb-0">
             <SideBar
               onOpenAuth={() => {
                 setIsAuthenticated(false);
@@ -336,7 +344,22 @@ const AppLayout = () => {
             <RightSideBar
               currentTrack={currentTrack}
               onOpenVideo={handleOpenVideo}
+              isOpen={isNowPlayingSidebarOpen}
+              onClose={() => setIsNowPlayingSidebarOpen(false)}
+              onShareSuccess={handleShareSuccess}
             />
+
+            {!isNowPlayingSidebarOpen && currentTrack && (
+              <button
+                type="button"
+                onClick={() => setIsNowPlayingSidebarOpen(true)}
+                className="absolute right-2 top-1/2 hidden size-10 -translate-y-1/2 items-center justify-center rounded-l-lg border border-r-0 border-zinc-700 bg-zinc-800 text-zinc-300 shadow-lg transition hover:bg-zinc-700 hover:text-white xl:flex"
+                aria-label="Mở thông tin bài hát"
+                title="Mở thông tin bài hát"
+              >
+                <ChevronLeft className="size-5" />
+              </button>
+            )}
           </div>
 
           <PlayerBar
@@ -352,6 +375,8 @@ const AppLayout = () => {
             seekTrigger={seekTrigger}
             onShareSuccess={handleShareSuccess}
             onToggleQueueSidebar={() => setIsQueueOpen((v) => !v)}
+            onToggleNowPlayingSidebar={() => setIsNowPlayingSidebarOpen((v) => !v)}
+            isNowPlayingSidebarOpen={isNowPlayingSidebarOpen}
             onTrackEnded={handleNext}
             onNext={handleNext}
             onPrevious={handlePrevious}
