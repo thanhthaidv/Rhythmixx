@@ -105,6 +105,7 @@ export interface CreateAlbumDto {
   description?: string;
   coverImageUrl?: string;
   releaseDate?: string;
+  coverImage?: File;
 }
 
 // ============ Playlist DTOs ============
