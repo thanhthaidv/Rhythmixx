@@ -16,9 +16,7 @@ export const mediaService = {
     if (data.genreId) formData.append('genreId', data.genreId);
     data.genreIds?.forEach((genreId) => formData.append('genreIds', genreId));
 
-    const res = await apiClient.post<ApiResponse<MediaItemDto>>('/media/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const res = await apiClient.post<ApiResponse<MediaItemDto>>('/media/upload', formData);
     return res.data.data;
   },
 
