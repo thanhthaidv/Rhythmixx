@@ -60,7 +60,10 @@ export const mapMediaToSong = (media: MediaItemDto, albumTitle?: string): SongTy
     mediaKind.includes("mpeg") ||
     mediaKind.includes("mp3") ||
     mediaKind.includes("wav");
+
+  const mediaType = isVideoMedia ? "video" : isAudioMedia ? "audio" : "audio";
   const streamUrl = mediaService.getMediaStream(media.mediaId);
+  const hasSeparateVideo = Boolean(media.videoFilePath);
 
   let albumName: string;
   if (!media.albumId) {
@@ -86,9 +89,13 @@ export const mapMediaToSong = (media: MediaItemDto, albumTitle?: string): SongTy
     duration: formatDuration(media.duration),
     isLiked: false,
     url: streamUrl,
-    videoUrl: isVideoMedia ? streamUrl : undefined,
-    posterUrl: resolveUrl(media.thumbnailUrl),
+    videoUrl: hasSeparateVideo
+      ? mediaService.getMediaVideoStream(media.mediaId)
+      : isVideoMedia
+        ? streamUrl
+        : undefined,
+    posterUrl: resolveAssetUrl(media.thumbnailUrl),
     artistId: media.artistId,
-    mediaType: isVideoMedia ? "video" : isAudioMedia ? "audio" : "audio",
+    mediaType,
   };
 };
