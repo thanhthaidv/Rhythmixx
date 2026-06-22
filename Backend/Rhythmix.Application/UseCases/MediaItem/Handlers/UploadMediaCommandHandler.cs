@@ -10,15 +10,18 @@ public sealed class UploadMediaCommandHandler : IRequestHandler<UploadMediaComma
 {
     private readonly IMediaRepository _mediaRepository;
     private readonly IArtistRepository _artistRepository;
+    private readonly IAlbumRepository _albumRepository;
     private readonly IFileStorageService _fileStorageService;
 
     public UploadMediaCommandHandler(
         IMediaRepository mediaRepository,
         IArtistRepository artistRepository,
+        IAlbumRepository albumRepository,
         IFileStorageService fileStorageService)
     {
         _mediaRepository = mediaRepository;
         _artistRepository = artistRepository;
+        _albumRepository = albumRepository;
         _fileStorageService = fileStorageService;
     }
 
@@ -58,6 +61,13 @@ public sealed class UploadMediaCommandHandler : IRequestHandler<UploadMediaComma
         await _mediaRepository.AddAsync(media);
         await _mediaRepository.SetGenresAsync(media.MediaId, request.GenreIds);
 
+        string? albumTitle = null;
+        if (request.AlbumId.HasValue)
+        {
+            var album = await _albumRepository.GetByIdAsync(request.AlbumId.Value);
+            albumTitle = album?.Title;
+        }
+
         return new MediaDto
         {
             MediaId = media.MediaId,
@@ -72,6 +82,7 @@ public sealed class UploadMediaCommandHandler : IRequestHandler<UploadMediaComma
             ArtistId = media.ArtistId,
             ArtistName = media.ArtistName,
             AlbumId = media.AlbumId,
+            AlbumTitle = albumTitle,
             GenreId = media.GenreId,
             OwnerId = media.OwnerId,
             IsPublic = media.IsPublic,

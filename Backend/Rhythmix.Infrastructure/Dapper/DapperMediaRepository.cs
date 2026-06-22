@@ -22,10 +22,11 @@ public sealed class DapperMediaRepository : IMediaRepository
             SELECT 
                 m.MediaId, m.Title, m.Description, m.MediaType, m.Duration, 
                 m.FilePath, m.ThumbnailUrl, m.MimeType, m.FileSize, 
-                m.ArtistId, a.Name AS ArtistName, m.AlbumId, m.GenreId,
+                m.ArtistId, a.Name AS ArtistName, m.AlbumId, al.Title AS AlbumTitle, m.GenreId,
                 m.OwnerId, m.IsPublic, m.ViewCount, m.CreatedAt
             FROM [MediaItems] m
             LEFT JOIN [Artists] a ON a.ArtistId = m.ArtistId
+            LEFT JOIN [Albums] al ON al.AlbumId = m.AlbumId
             WHERE m.MediaId = @MediaId";
 
         await using var connection = new SqlConnection(_connectionString);
@@ -42,10 +43,11 @@ public sealed class DapperMediaRepository : IMediaRepository
             SELECT 
                 m.MediaId, m.Title, m.Description, m.MediaType, m.Duration, 
                 m.FilePath, m.ThumbnailUrl, m.MimeType, m.FileSize, 
-                m.ArtistId, a.Name AS ArtistName, m.AlbumId, m.GenreId,
+                m.ArtistId, a.Name AS ArtistName, m.AlbumId, al.Title AS AlbumTitle, m.GenreId,
                 m.OwnerId, m.IsPublic, m.ViewCount, m.CreatedAt
             FROM [MediaItems] m
             LEFT JOIN [Artists] a ON a.ArtistId = m.ArtistId
+            LEFT JOIN [Albums] al ON al.AlbumId = m.AlbumId
             WHERE m.MediaId IN @Ids";
 
         await using var connection = new SqlConnection(_connectionString);
@@ -145,10 +147,11 @@ public sealed class DapperMediaRepository : IMediaRepository
             SELECT 
                 m.MediaId, m.Title, m.Description, m.MediaType, m.Duration, 
                 m.FilePath, m.ThumbnailUrl, m.MimeType, m.FileSize, 
-                m.ArtistId, a.Name AS ArtistName, m.AlbumId, m.GenreId,
+                m.ArtistId, a.Name AS ArtistName, m.AlbumId, al.Title AS AlbumTitle, m.GenreId,
                 m.OwnerId, m.IsPublic, m.ViewCount, m.CreatedAt
             FROM [MediaItems] m
             LEFT JOIN [Artists] a ON a.ArtistId = m.ArtistId
+            LEFT JOIN [Albums] al ON al.AlbumId = m.AlbumId
             WHERE m.OwnerId = @OwnerId
             ORDER BY m.CreatedAt DESC
             OFFSET @Offset ROWS
@@ -170,10 +173,11 @@ public sealed class DapperMediaRepository : IMediaRepository
             SELECT
                 m.MediaId, m.Title, m.Description, m.MediaType, m.Duration,
                 m.FilePath, m.ThumbnailUrl, m.MimeType, m.FileSize,
-                m.ArtistId, a.Name AS ArtistName, m.AlbumId, m.GenreId,
+                m.ArtistId, a.Name AS ArtistName, m.AlbumId, al.Title AS AlbumTitle, m.GenreId,
                 m.OwnerId, m.IsPublic, m.ViewCount, m.CreatedAt
             FROM [MediaItems] m
             LEFT JOIN [Artists] a ON a.ArtistId = m.ArtistId
+            LEFT JOIN [Albums] al ON al.AlbumId = m.AlbumId
             WHERE m.AlbumId = @AlbumId
             ORDER BY m.CreatedAt ASC";
 
@@ -196,10 +200,11 @@ public sealed class DapperMediaRepository : IMediaRepository
                 SELECT 
                     m.MediaId, m.Title, m.Description, m.MediaType, m.Duration, 
                     m.FilePath, m.ThumbnailUrl, m.MimeType, m.FileSize, 
-                    m.ArtistId, a.Name AS ArtistName, m.AlbumId, m.GenreId,
+                    m.ArtistId, a.Name AS ArtistName, m.AlbumId, al.Title AS AlbumTitle, m.GenreId,
                     m.OwnerId, m.IsPublic, m.ViewCount, m.CreatedAt
                 FROM [MediaItems] m
                 LEFT JOIN [Artists] a ON a.ArtistId = m.ArtistId
+                LEFT JOIN [Albums] al ON al.AlbumId = m.AlbumId
                 WHERE m.IsPublic = 1
                 ORDER BY m.CreatedAt DESC
                 OFFSET @Offset ROWS
@@ -208,10 +213,11 @@ public sealed class DapperMediaRepository : IMediaRepository
                 SELECT 
                     m.MediaId, m.Title, m.Description, m.MediaType, m.Duration, 
                     m.FilePath, m.ThumbnailUrl, m.MimeType, m.FileSize, 
-                    m.ArtistId, a.Name AS ArtistName, m.AlbumId, m.GenreId,
+                    m.ArtistId, a.Name AS ArtistName, m.AlbumId, al.Title AS AlbumTitle, m.GenreId,
                     m.OwnerId, CAST(1 AS bit) AS IsPublic, m.ViewCount, m.CreatedAt
                 FROM [MediaItems] m
                 LEFT JOIN [Artists] a ON a.ArtistId = m.ArtistId
+                LEFT JOIN [Albums] al ON al.AlbumId = m.AlbumId
                 ORDER BY m.CreatedAt DESC
                 OFFSET @Offset ROWS
                 FETCH NEXT @PageSize ROWS ONLY";

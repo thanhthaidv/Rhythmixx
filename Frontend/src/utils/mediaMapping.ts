@@ -46,7 +46,7 @@ export const resolveArtistName = (artistName?: string, ownerName?: string, title
   return "Unknown artist";
 };
 
-export const mapMediaToSong = (media: MediaItemDto): SongType => {
+export const mapMediaToSong = (media: MediaItemDto, albumTitle?: string): SongType => {
   const mediaKind = (media.contentType || media.mimeType || media.mediaType || "")
     .toString()
     .toLowerCase()
@@ -62,11 +62,27 @@ export const mapMediaToSong = (media: MediaItemDto): SongType => {
     mediaKind.includes("wav");
   const streamUrl = mediaService.getMediaStream(media.mediaId);
 
+  let albumName: string;
+  if (!media.albumId) {
+    // Definitely a single
+    albumName = "Single";
+  } else {
+    // Has albumId, check for albumTitle
+    const potentialAlbumTitle = albumTitle || media.albumTitle;
+    if (potentialAlbumTitle && potentialAlbumTitle.trim() !== "") {
+      // Only use "Album [title]" if title is valid
+      albumName = `Album ${potentialAlbumTitle}`;
+    } else {
+      // Fallback if no valid album title
+      albumName = "Album Track";
+    }
+  }
+
   return {
     id: media.mediaId,
     title: media.title || "Unknown title",
     artist: resolveArtistName(media.artistName, media.ownerName, media.title),
-    album: "Single",
+    album: albumName,
     duration: formatDuration(media.duration),
     isLiked: false,
     url: streamUrl,

@@ -12,7 +12,8 @@ import { useNavigate, useParams, useOutletContext } from "react-router-dom";
 import { albumService } from "../api/albumService";
 import { mediaService } from "../api/mediaService";
 import { type AlbumDetailDto, type MediaItemDto } from "../types/api";
-import { resolveArtistName, type SongType } from "../utils/mediaMapping";
+import { resolveArtistName, mapMediaToSong, type SongType } from "../utils/mediaMapping";
+import { resolveAssetUrl } from "../config/apiConfig";
 import AddSongAlbumModal from "../components/AddSongAlbumModal";
 import UpdateAlbumModal from "../components/UpdateAlbumModal";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
@@ -38,28 +39,8 @@ const mapAlbumTrackToSong = (
   track: MediaItemDto,
   albumTitle?: string,
 ): SongType => {
-  const mediaKind = (track.contentType || track.mimeType || track.mediaType || "")
-    .toString()
-    .toLowerCase()
-    .trim();
-  const isVideo =
-    mediaKind === "video" ||
-    mediaKind.startsWith("video/") ||
-    mediaKind.includes("mp4");
-  const streamUrl = mediaService.getMediaStream(track.mediaId);
-
-  return {
-    id: track.mediaId,
-    title: track.title || "Unknown title",
-    artist: resolveArtistName(track.artistName, track.ownerName, track.title),
-    album: albumTitle || "Album",
-    duration: formatAlbumDuration(track.duration),
-    isLiked: false,
-    url: streamUrl,
-    videoUrl: isVideo ? streamUrl : undefined,
-    posterUrl: track.thumbnailUrl,
-    mediaType: isVideo ? "video" : "audio",
-  };
+  const song = mapMediaToSong(track, albumTitle || "Album");
+  return song;
 };
 
 const AlbumDetailPage = () => {
@@ -159,16 +140,18 @@ const AlbumDetailPage = () => {
 
       {/* Header */}
       <div className="mb-8 flex items-end gap-6">
-        <div className="flex h-44 w-44 shrink-0 items-center justify-center rounded-lg bg-zinc-800 shadow-2xl overflow-hidden">
-          {albumInfo?.coverImageUrl ? (
-            <img
-              src={albumInfo.coverImageUrl}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <Disc className="size-16 text-zinc-400" />
-          )}
-        </div>
+            <div className="flex h-44 w-44 shrink-0 items-center justify-center rounded-lg bg-zinc-800 shadow-2xl overflow-hidden">
+              {albumInfo?.coverImageUrl ? (
+                <img
+                  src={resolveAssetUrl(albumInfo.coverImageUrl)}
+                  alt={albumInfo.title}
+                  className="h-full w-full object-cover"
+                  onError={(e) => (e.currentTarget.style.display = 'none')}
+                />
+              ) : (
+                <Disc className="size-16 text-zinc-400" />
+              )}
+            </div>
         <div className="flex flex-col gap-1">
           <span className="text-xs font-bold uppercase tracking-wider text-zinc-300">
             Album

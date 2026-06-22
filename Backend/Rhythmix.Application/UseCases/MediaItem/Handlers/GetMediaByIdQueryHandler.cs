@@ -33,6 +33,7 @@ public sealed class GetMediaByIdQueryHandler : IRequestHandler<GetMediaByIdQuery
             ArtistId = media.ArtistId,
             ArtistName = media.ArtistName,
             AlbumId = media.AlbumId,
+            AlbumTitle = media.AlbumTitle,
             GenreId = media.GenreId,
             OwnerId = media.OwnerId,
             IsPublic = media.IsPublic,

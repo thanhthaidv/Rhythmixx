@@ -44,6 +44,7 @@ export interface MediaItemDto {
   artistId?: string;
   artistName?: string;
   albumId?: string;
+  albumTitle?: string;
   genreId?: string;
   ownerId: string;
   ownerName?: string;
@@ -239,6 +240,8 @@ export interface SearchMediaDto {
   thumbnailUrl?: string;
   artistId?: string;
   artistName?: string;
+  albumId?: string;
+  albumTitle?: string;
   genreId?: string;
   viewCount: number;
   createdAt: string;
@@ -255,6 +258,17 @@ export interface SearchPlaylistDto {
   createdAt: string;
 }
 
+export interface SearchAlbumDto {
+  albumId: string;
+  title: string;
+  description?: string;
+  coverImageUrl?: string;
+  ownerId: string;
+  artistName?: string;
+  trackCount: number;
+  createdAt: string;
+}
+
 export interface SearchGenrePlaylistDto {
   genreId: string;
   name: string;
@@ -267,6 +281,7 @@ export interface SearchResultDto {
   media: SearchMediaDto[];
   playlists: SearchPlaylistDto[];
   genrePlaylists: SearchGenrePlaylistDto[];
+  albums: SearchAlbumDto[];
   pagination?: {
     page: number;
     pageSize: number;

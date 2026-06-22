@@ -3,6 +3,7 @@ import { Music, X } from "lucide-react";
 
 import type { AlbumDetailDto } from "../types/api";
 import { albumService } from "../api/albumService";
+import { resolveAssetUrl } from "../config/apiConfig";
 
 interface UpdateAlbumModalProps {
   isOpen: boolean;
@@ -62,12 +63,10 @@ const UpdateAlbumModal: React.FC<UpdateAlbumModalProps> = ({
 
     setIsLoading(true);
     try {
-      // Note: Currently backend doesn't support uploading cover image via update
-      // For now, just update title and description
       await albumService.update(AlbumData.albumId, {
         title: name.trim(),
         description: description.trim() || undefined,
-        coverImageUrl: AlbumData.coverImageUrl,
+        coverImage: coverImage || undefined, // Gửi file ảnh bìa mới nếu có
       });
 
       onUpdateSuccess();
@@ -81,11 +80,6 @@ const UpdateAlbumModal: React.FC<UpdateAlbumModalProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
-  const resolveAssetUrl = (url?: string | null) => {
-    if (!url) return null;
-    if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("blob:")) return url;
-    return `http://localhost:5269${url}`;
   };
 
   return (
@@ -118,7 +112,7 @@ const UpdateAlbumModal: React.FC<UpdateAlbumModalProps> = ({
                 />
               ) : previewUrl || AlbumData?.coverImageUrl ? (
                 <img
-                  src={resolveAssetUrl(previewUrl || AlbumData.coverImageUrl) || ""}
+                  src={resolveAssetUrl((previewUrl || AlbumData.coverImageUrl)!)}
                   alt={AlbumData.title}
                   className="size-full object-cover"
                   onError={(e) => (e.currentTarget.style.display = 'none')}
@@ -140,7 +134,6 @@ const UpdateAlbumModal: React.FC<UpdateAlbumModalProps> = ({
                 accept="image/*"
                 className="sr-only"
                 onChange={handleFileChange}
-                disabled={true} // Disable for now since backend doesn't support it
               />
             </label>
 
