@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Eye, EyeOff, X, Library } from "lucide-react";
 import { authService } from "../api/authService";
 
@@ -10,11 +10,12 @@ interface AuthModalProps {
   open: boolean;
   onClose: () => void;
   onAuthenticated: (name: string) => void;
+  initialMode?: Mode;
 }
 
 
-const AuthModal = ({ open, onClose, onAuthenticated }: AuthModalProps) => {
-  const [mode, setMode] = useState<Mode>("login");
+const AuthModal = ({ open, onClose, onAuthenticated, initialMode = "login", }: AuthModalProps) => {
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,6 +27,18 @@ const AuthModal = ({ open, onClose, onAuthenticated }: AuthModalProps) => {
   const [registerStep, setRegisterStep] = useState<RegisterStep>("form");
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setMode(initialMode);
+      setRegisterStep("form");
+      setErrors({});
+      setSuccessMessage(null);
+      setOtp("");
+      setShowPassword(false);
+      setShowConfirmPassword(false);
+    }
+  }, [open, initialMode]);
 
 
   // Nếu state open = false thì không render gì cả
@@ -129,7 +142,6 @@ const AuthModal = ({ open, onClose, onAuthenticated }: AuthModalProps) => {
 
         onAuthenticated(userName);
         setErrors({});
-        onClose();
         return;
       }
 
