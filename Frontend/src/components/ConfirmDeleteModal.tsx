@@ -19,21 +19,21 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
     song: {
       title: "Xóa bài hát?",
       message: (
-        <>Bạn có chắc chắn muốn xóa bài hát <span className="text-white font-semibold">"{itemTitle}"</span> khỏi danh sách phát này không?</>
+        <>Are you sure you want to remove the song <span className="text-white font-semibold">"{itemTitle}"</span> from this playlist?</>
       ),
       buttonText: "Xóa bài hát"
     },
     playlist: {
       title: "Xóa playlist?",
       message: (
-        <>Bạn có chắc chắn muốn xóa playlist <span className="text-white font-semibold">"{itemTitle}"</span> khỏi thư viện không? Hành động này không thể hoàn tác.</>
+        <>Are you sure you want to remove the playlist <span className="text-white font-semibold">"{itemTitle}"</span> from your library? This action cannot be undone.</>
       ),
       buttonText: "Xóa playlist"
     },
     album: {
       title: "Xóa album?",
       message: (
-        <>Bạn có chắc chắn muốn xóa album <span className="text-white font-semibold">"{itemTitle}"</span> khỏi thư viện không? Hành động này không thể hoàn tác.</>
+        <>Are you sure you want to remove the album <span className="text-white font-semibold">"{itemTitle}"</span> from your library? This action cannot be undone.</>
       ),
       buttonText: "Xóa album"
     }
@@ -75,7 +75,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
             onClick={onClose}
             className="flex-1 bg-zinc-800 text-zinc-300 font-semibold text-sm py-2.5 rounded-full hover:bg-zinc-700 hover:text-white transition-colors cursor-pointer"
           >
-            Hủy
+            Cancel
           </button>
           <button
             type="button"

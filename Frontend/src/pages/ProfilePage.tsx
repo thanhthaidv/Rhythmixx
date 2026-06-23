@@ -562,7 +562,7 @@ const ProfilePage = () => {
                 }}
                 className="flex cursor-pointer items-center gap-2 rounded-full border border-zinc-700 bg-zinc-900 px-4 py-1.5 text-xs font-bold text-white hover:bg-zinc-800"
               >
-                <Edit3 className="size-3" /> Chỉnh sửa hồ sơ
+                <Edit3 className="size-3" /> Edit profile 
               </button>
             ) : (
               <button
@@ -572,7 +572,7 @@ const ProfilePage = () => {
                   isFollowing ? "bg-zinc-800 text-white" : "bg-white text-black"
                 }`}
               >
-                {isFollowing ? "Đang theo dõi" : "Theo dõi"}
+                {isFollowing ? "Following" : "Follow"}
               </button>
             )}
           </div>
@@ -789,7 +789,7 @@ const ProfilePage = () => {
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-md space-y-5 rounded-xl border border-zinc-700 bg-zinc-900 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <h3 className="text-base font-bold text-white">Chỉnh sửa hồ sơ cá nhân</h3>
+              <h3 className="text-base font-bold text-white">Edit profile</h3>
               <button
                 onClick={() => {
                   setProfileError("");
@@ -819,7 +819,7 @@ const ProfilePage = () => {
 
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 text-[10px] font-bold text-white opacity-0 transition-opacity group-hover:opacity-100">
                     <Camera className="size-4 mb-1" />
-                    <span>Thay đổi ảnh</span>
+                    <span>Select image</span>
                   </div>
                 </div>
 
@@ -836,13 +836,13 @@ const ProfilePage = () => {
                   onClick={() => fileInputRef.current?.click()}
                   className="cursor-pointer text-xs font-semibold text-green-500 hover:underline"
                 >
-                  Chọn ảnh từ máy tính
+                  Select image from computer
                 </button>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">
-                  Tên hiển thị
+                  Name
                 </label>
                 <input
                   type="text"
@@ -855,7 +855,7 @@ const ProfilePage = () => {
 
               <div>
                 <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">
-                  Tiểu sử (Bio)
+                  Bio
                 </label>
                 <textarea
                   rows={3}
@@ -880,7 +880,7 @@ const ProfilePage = () => {
                   }}
                   className="cursor-pointer px-4 py-2 text-xs font-bold text-white hover:underline"
                 >
-                  Hủy
+                  Cancel
                 </button>
 
                 <button
@@ -888,7 +888,7 @@ const ProfilePage = () => {
                   disabled={isSaveDisabled}
                   className="flex cursor-pointer items-center gap-1.5 rounded-full bg-white px-5 py-2.5 text-xs font-bold text-black transition-transform hover:bg-zinc-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <Save className="size-3.5" /> Lưu thay đổi
+                  <Save className="size-3.5" /> Save changes
                 </button>
               </div>
             </form>

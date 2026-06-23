@@ -358,7 +358,7 @@ const RightSideBar = ({
                         : "border-zinc-500 text-white hover:border-white"
                       } ${!currentTrack.artistId || isFollowLoading ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
                   >
-                    {isFollowLoading ? "Đang xử lý" : isFollowing ? "Đang theo dõi" : "Theo dõi"}
+                    {isFollowLoading ? "Đang xử lý" : isFollowing ? "Following" : "Follow"}
                   </button>
                 </div>
               </section>
