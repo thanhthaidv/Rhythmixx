@@ -16,6 +16,10 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        var allowedOrigins = builder.Configuration
+        .GetSection("AllowedOrigins")
+        .Get<string[]>() ?? Array.Empty<string>();
+
         builder.Services.AddDataProtection().UseEphemeralDataProtectionProvider();
         builder.Services.AddControllers();
         builder.Services.Configure<ApiBehaviorOptions>(options =>
@@ -49,7 +53,7 @@ public class Program
         {
             options.AddDefaultPolicy(policy =>
             {
-                policy.WithOrigins("http://localhost:5173")
+                policy.WithOrigins(allowedOrigins)
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();

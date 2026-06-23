@@ -15,6 +15,7 @@ import ShareModal from "./ShareModal";
 import type { ShareItemDto } from "../types/api";
 import type { SongType } from "../utils/mediaMapping";
 import { userService } from "../api/userService";
+import { resolveAssetUrl } from "../config/apiConfig";
 
 interface PlayerBarProps {
   currentTrack: SongType | null;
@@ -35,22 +36,9 @@ interface PlayerBarProps {
   onNext: () => void;
   onPrevious: () => void;
 }
-const API_ORIGIN = "http://localhost:5269";
-
 const resolveAudioUrl = (url?: string | null) => {
   if (!url) return "";
-
-  if (
-    url.startsWith("http://") ||
-    url.startsWith("https://") ||
-    url.startsWith("blob:")
-  ) {
-    return url;
-  }
-
-  const normalizedUrl = url.startsWith("/") ? url : `/${url}`;
-
-  return `${API_ORIGIN}${encodeURI(normalizedUrl)}`;
+  return resolveAssetUrl(url);
 };
 
 const PlayerBar = ({

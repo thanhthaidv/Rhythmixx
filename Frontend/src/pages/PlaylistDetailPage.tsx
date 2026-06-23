@@ -20,6 +20,7 @@ import { mediaService } from "../api/mediaService";
 import type { PlaylistDetailDto, PlaylistTrackDto, ShareItemDto } from "../types/api";
 import UpdatePlaylistModal from "../components/UpdatePlaylistModal";
 import { resolveArtistName, type SongType } from "../utils/mediaMapping";
+import { resolveAssetUrl } from "../config/apiConfig";
 
 interface OutletContextType {
   currentSongId: string | null;
@@ -198,11 +199,7 @@ const PlaylistDetailPage = () => {
         <div className="flex h-44 w-44 shrink-0 items-center justify-center rounded-lg bg-zinc-800 shadow-2xl overflow-hidden">
           {playlistCoverUrl ? (
           <img
-            src={
-              playlistCoverUrl.startsWith("http")
-                ? playlistCoverUrl
-                : `http://localhost:5269${playlistCoverUrl}`
-            }
+            src={resolveAssetUrl(playlistCoverUrl)}
             alt={playlistInfo?.name || "Playlist"}
             className="h-full w-full object-cover"
           />
