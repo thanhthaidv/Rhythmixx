@@ -71,16 +71,16 @@ const HomePage = () => {
 
       <section>
         <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold text-white">Dành cho bạn</h2>
+          <h2 className="text-xl font-semibold text-white">For you</h2>
           {recommendationSource && (
             <span className="text-xs font-medium text-zinc-400">
-              {recommendationSource === "openrouter" ? "Gợi ý bởi OpenRouter" : "Gợi ý từ thư viện"}
+              {recommendationSource === "openrouter" ? "Recommended by OpenRouter" : "Recommended from library"}
             </span>
           )}
         </div>
         {recommendations.length === 0 ? (
           <div className="rounded-lg border border-dashed border-zinc-800 py-10 text-center text-sm text-zinc-400">
-            Chưa có bài hát để đề xuất.
+            No songs to recommend.
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">

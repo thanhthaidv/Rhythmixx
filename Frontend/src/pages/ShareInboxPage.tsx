@@ -116,7 +116,7 @@ const ShareInboxPage = () => {
   // 2. KHAI BÁO STATE CẦN THIẾT TRƯỚC (Để useEffect dùng được)
   const [activeTab, setActiveTab] = useState<"received" | "sent">("received");
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const itemsPerPage = 3;
+  const itemsPerPage = 5;
   const currentUserId = localStorage.getItem("currentUserId") || "";
   const [apiMessages, setApiMessages] = useState<Message[]>([]);
   const [isLoadingShares, setIsLoadingShares] = useState(false);
@@ -253,7 +253,7 @@ const ShareInboxPage = () => {
           }`}
         >
           <Inbox className="size-4" />
-          Đã chia sẻ với tôi
+          Shared with me
         </button>
 
         <button
@@ -264,14 +264,14 @@ const ShareInboxPage = () => {
           }`}
         >
           <Send className="size-4" />
-          Đã gửi cho người khác
+          Sent to someone else
         </button>
       </div>
 
       {/* Danh sách hiển thị tin nhắn/bài nhạc */}
       {isLoadingShares && (
         <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-400">
-          Dang tai danh sach chia se...
+          Loading sharing list...
         </div>
       )}
 
@@ -311,13 +311,13 @@ const ShareInboxPage = () => {
                     <div className="flex items-center gap-2">
                       {isSentTab ? (
                         <>
-                          <span className="text-xs text-zinc-400">Bạn đã gửi cho</span>
+                          <span className="text-xs text-zinc-400">You sent it to </span>
                           <span className="font-semibold text-white text-sm">{displayName}</span>
                         </>
                       ) : (
                         <>
                           <span className="font-semibold text-white text-sm">{displayName}</span>
-                          <span className="text-xs text-zinc-400">đã gửi cho bạn</span>
+                          <span className="text-xs text-zinc-400">shared with you</span>
                         </>
                       )}
                       <span className="text-xs text-zinc-500">• {formatTimeAgo(item.time)}</span>
@@ -341,7 +341,7 @@ const ShareInboxPage = () => {
                             {item.playlistData.title}
                           </p>
                           <p className="text-[11px] text-zinc-400 truncate">
-                            {item.playlistData.description || "Playlist được chia sẻ"}
+                            {item.playlistData.description || "Playlist shared with you"}
                           </p>
                         </div>
                         <div className="text-zinc-500 group-hover/item:text-emerald-400 transition-colors pr-1">
@@ -407,8 +407,8 @@ const ShareInboxPage = () => {
       {totalPages > 1 && (
         <div className="flex items-center justify-between border-t border-zinc-800 pt-4">
           <p className="text-xs text-zinc-400">
-            Đang hiện trang <span className="text-white font-medium">{currentPage}</span> trên tổng số{" "}
-            <span className="text-white font-medium">{totalPages}</span> trang
+            Currently showing <span className="text-white font-medium">{currentPage}</span> out of a total of {" "}
+            <span className="text-white font-medium">{totalPages}</span> pages
           </p>
           <div className="flex gap-2">
             <button

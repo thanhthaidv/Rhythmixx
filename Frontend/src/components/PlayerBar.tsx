@@ -43,7 +43,7 @@ interface PlayerBarProps {
   onPrevious: () => void;
 }
 const resolveAudioUrl = (url?: string | null) => {
-  if (!url) return "";
+  if (!url) return undefined;
   return resolveAssetUrl(url);
 };
 
@@ -70,10 +70,11 @@ const PlayerBar = ({
 
   const audioSrc = resolveAudioUrl(
     currentTrack
-      ? currentTrack.url ||
+      ? (currentTrack.url ||
           (currentTrack as any).audioUrl ||
-          (currentTrack as any).fileUrl
-      : "",
+          (currentTrack as any).fileUrl ||
+          undefined)
+      : undefined,
   );
 
   const mediaKind = (
@@ -241,7 +242,7 @@ useEffect(() => {
           ref={(el) => {
             audioRef.current = el;
           }}
-          src={audioSrc}
+          src={audioSrc ?? undefined}
           preload="metadata"
           playsInline
           style={{
@@ -264,7 +265,7 @@ useEffect(() => {
           ref={(el) => {
             audioRef.current = el;
           }}
-          src={audioSrc}
+          src={audioSrc ?? undefined}
           preload="metadata"
           onTimeUpdate={handleTimeUpdate}
           onLoadedMetadata={handleLoadedMetadata}

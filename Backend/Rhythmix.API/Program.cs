@@ -11,12 +11,13 @@ using Rhythmix.Infrastructure.Services;
 using Microsoft.Extensions.Options;
 using Rhythmix.Infrastructure.Email;
 using Scalar.AspNetCore;
+using Microsoft.Data.SqlClient;
 
 namespace Rhythmix.API;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)  // 👈 ĐÃ SỬA
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,8 @@ public class Program
 
         builder.Services.AddDataProtection().UseEphemeralDataProtectionProvider();
         builder.Services.AddControllers();
+        builder.Services.AddMemoryCache();
+
         builder.Services.Configure<ApiBehaviorOptions>(options =>
         {
             options.InvalidModelStateResponseFactory = context =>
@@ -106,7 +109,6 @@ public class Program
 
         builder.Services.AddAuthorization();
 
-        // Bật OpenAPI + XML comment cho Swagger
         builder.Services.AddOpenApi(options =>
         {
             options.AddDocumentTransformer((document, context, ct) =>
@@ -120,12 +122,45 @@ public class Program
 
         var app = builder.Build();
 
+        // ================================================================
+        // 🎯 KIỂM TRA KẾT NỐI DATABASE (ĐÃ SỬA LỖI)
+        // ================================================================
+        
+        using (var scope = app.Services.CreateScope())
+        {
+            var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            
+            try
+            {
+                var connectionString = configuration.GetConnectionString("DefaultConnection");
+                logger.LogInformation("🔄 Attempting to connect to database...");
+                logger.LogInformation("📡 Connection string: {ConnectionString}", 
+                    connectionString?.Replace("Password=", "Password=***") ?? "null");
+                
+                using var connection = new SqlConnection(connectionString);
+                await connection.OpenAsync();  // 👈 ĐÃ CÓ THỂ DÙNG await VÌ Main LÀ async
+                
+                logger.LogInformation("✅ Database connection successful!");
+                logger.LogInformation("   Server: {Server}", connection.DataSource);
+                logger.LogInformation("   Database: {Database}", connection.Database);
+                logger.LogInformation("   State: {State}", connection.State);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "❌ Database connection failed!");
+                logger.LogError("   Error: {Message}", ex.Message);
+            }
+        }
+
+        // ================================================================
+
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
             app.UseSwaggerUI();
-            app.MapOpenApi();                     // endpoint: /openapi/v1.json
-            app.MapScalarApiReference(options => // UI tại: /scalar/v1
+            app.MapOpenApi();
+            app.MapScalarApiReference(options =>
             {
                 options.Title = "Rhythmix API";
                 options.DefaultHttpClient = new(ScalarTarget.JavaScript, ScalarClient.Fetch);
