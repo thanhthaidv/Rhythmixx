@@ -324,7 +324,7 @@ const AppLayout = () => {
     "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1000";
 
   return (
-    <div className="flex h-screen flex-col bg-zinc-100 text-zinc-950 transition-colors duration-200 select-none font-sans dark:bg-zinc-950 dark:text-white">
+    <div className="flex h-screen flex-col bg-slate-200 text-zinc-950 transition-colors duration-200 select-none font-sans dark:bg-zinc-950 dark:text-white">
       <AuthModal
         open={shouldShowAuthModal}
         onClose={() => {
@@ -375,7 +375,7 @@ const AppLayout = () => {
               <Menu size={20} />
             </button>
 
-            <main className="min-w-0 flex-1 overflow-y-auto rounded-lg bg-white p-6 shadow-sm transition-colors duration-200 dark:bg-zinc-900 dark:shadow-none">
+            <main className="min-w-0 flex-1 overflow-y-auto rounded-lg bg-slate-50 p-6 shadow-sm transition-colors duration-200 dark:bg-zinc-900 dark:shadow-none">
               <div key={location.key} className="route-enter min-h-full">
                 <Outlet
                   context={
