@@ -3,6 +3,7 @@ import { Music, X, Globe, Lock } from "lucide-react";
 
 import type { PlaylistDetailDto, CreatePlaylistDto, PlaylistDto } from "../types/api";
 import { playlistService } from "../api/playlistService";
+import { resolveAssetUrl as resolveConfiguredAssetUrl } from "../config/apiConfig";
 
 interface UpdatePlaylistModalProps {
   isOpen: boolean;
@@ -94,8 +95,7 @@ const UpdatePlaylistModal: React.FC<UpdatePlaylistModalProps> = ({
   };
   const resolveAssetUrl = (url?: string | null) => {
     if (!url) return null;
-    if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("blob:")) return url;
-    return `http://localhost:5269${url}`;
+    return resolveConfiguredAssetUrl(url);
   };
 
   return (
